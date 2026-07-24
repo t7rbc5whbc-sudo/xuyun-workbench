@@ -1,0 +1,864 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+  <meta name="theme-color" content="#2e7d32">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+  <title>徐云工作台</title>
+  <link rel="manifest" href="manifest.json">
+  <link rel="apple-touch-icon" href="icon.png">
+  <style>
+    :root {
+      --primary: #2e7d32;
+      --primary-light: #4caf50;
+      --primary-dark: #1b5e20;
+      --danger: #e53935;
+      --warning: #fb8c00;
+      --bg: #f5f5f5;
+      --card: #ffffff;
+      --text: #212121;
+      --text-secondary: #757575;
+      --border: #e0e0e0;
+      --success: #43a047;
+    }
+    * { margin: 0; padding: 0; box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+      background: var(--bg);
+      color: var(--text);
+      line-height: 1.5;
+      padding-bottom: 100px;
+    }
+    .app-bar {
+      background: linear-gradient(135deg, var(--primary) 0%, var(--primary-dark) 100%);
+      color: white;
+      padding: 16px;
+      position: sticky;
+      top: 0;
+      z-index: 100;
+      box-shadow: 0 2px 8px rgba(0,0,0,0.15);
+    }
+    .app-bar h1 { font-size: 20px; font-weight: 700; }
+    .app-bar .date { font-size: 13px; opacity: 0.9; margin-top: 2px; }
+    .header-stats {
+      display: flex;
+      gap: 12px;
+      margin-top: 12px;
+    }
+    .stat-chip {
+      background: rgba(255,255,255,0.2);
+      padding: 6px 12px;
+      border-radius: 20px;
+      font-size: 12px;
+      backdrop-filter: blur(4px);
+      display: flex;
+      align-items: center;
+      gap: 4px;
+    }
+    .container { padding: 12px; max-width: 480px; margin: 0 auto; }
+    .section-title {
+      font-size: 14px;
+      font-weight: 700;
+      color: var(--text-secondary);
+      margin: 20px 0 10px;
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+    }
+    .progress-card {
+      background: var(--card);
+      border-radius: 16px;
+      padding: 16px;
+      box-shadow: 0 2px 8px rgba(0,0,0,0.06);
+      display: flex;
+      align-items: center;
+      gap: 16px;
+    }
+    .progress-ring {
+      width: 80px;
+      height: 80px;
+      flex-shrink: 0;
+    }
+    .progress-ring circle { fill: none; stroke-width: 8; }
+    .progress-ring .bg { stroke: #e8f5e9; }
+    .progress-ring .fg { stroke: var(--primary); stroke-linecap: round; transition: stroke-dashoffset 0.5s; }
+    .progress-info h3 { font-size: 16px; margin-bottom: 4px; }
+    .progress-info p { font-size: 13px; color: var(--text-secondary); }
+    .score { font-size: 24px; font-weight: 800; color: var(--primary); }
+    .nav-menu {
+      display: grid;
+      grid-template-columns: repeat(2, 1fr);
+      gap: 10px;
+      margin-top: 12px;
+    }
+    .nav-btn {
+      background: var(--card);
+      border: none;
+      border-radius: 14px;
+      padding: 14px;
+      text-align: left;
+      box-shadow: 0 2px 6px rgba(0,0,0,0.05);
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      font-size: 14px;
+      font-weight: 600;
+      color: var(--text);
+      cursor: pointer;
+      transition: transform 0.1s, box-shadow 0.1s;
+    }
+    .nav-btn:active { transform: scale(0.98); }
+    .nav-btn.active { background: var(--primary); color: white; }
+    .nav-btn .icon { font-size: 22px; width: 32px; text-align: center; }
+    .page { display: none; }
+    .page.active { display: block; }
+    .timeline {
+      background: var(--card);
+      border-radius: 16px;
+      padding: 12px;
+      box-shadow: 0 2px 8px rgba(0,0,0,0.06);
+    }
+    .task-item {
+      display: flex;
+      align-items: flex-start;
+      gap: 12px;
+      padding: 12px;
+      border-radius: 12px;
+      margin-bottom: 8px;
+      background: #fafafa;
+      border-left: 4px solid var(--border);
+      transition: all 0.2s;
+      position: relative;
+    }
+    .task-item:last-child { margin-bottom: 0; }
+    .task-item.health { border-left-color: #e91e63; }
+    .task-item.study { border-left-color: #2196f3; }
+    .task-item.sport { border-left-color: #ff9800; }
+    .task-item.routine { border-left-color: #9c27b0; }
+    .task-item.done { background: #e8f5e9; opacity: 0.85; }
+    .task-item.done .task-title { text-decoration: line-through; color: var(--text-secondary); }
+    .task-checkbox {
+      width: 24px;
+      height: 24px;
+      border-radius: 50%;
+      border: 2px solid var(--border);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      flex-shrink: 0;
+      cursor: pointer;
+      margin-top: 2px;
+      transition: all 0.2s;
+    }
+    .task-item.done .task-checkbox { background: var(--success); border-color: var(--success); color: white; }
+    .task-content { flex: 1; }
+    .task-time { font-size: 11px; color: var(--text-secondary); font-weight: 600; margin-bottom: 2px; }
+    .task-title { font-size: 15px; font-weight: 600; }
+    .task-desc { font-size: 12px; color: var(--text-secondary); margin-top: 2px; }
+    .task-actions {
+      display: flex;
+      gap: 6px;
+      margin-top: 8px;
+    }
+    .btn-sm {
+      border: none;
+      border-radius: 16px;
+      padding: 5px 12px;
+      font-size: 12px;
+      font-weight: 600;
+      cursor: pointer;
+    }
+    .btn-primary-sm { background: var(--primary); color: white; }
+    .btn-danger-sm { background: #ffebee; color: var(--danger); }
+    .btn-warning-sm { background: #fff3e0; color: var(--warning); }
+    .tag {
+      display: inline-block;
+      font-size: 10px;
+      padding: 2px 6px;
+      border-radius: 10px;
+      font-weight: 700;
+      margin-right: 4px;
+    }
+    .tag-health { background: #fce4ec; color: #c2185b; }
+    .tag-study { background: #e3f2fd; color: #1565c0; }
+    .tag-sport { background: #fff3e0; color: #ef6c00; }
+    .tag-routine { background: #f3e5f5; color: #7b1fa2; }
+    .card {
+      background: var(--card);
+      border-radius: 16px;
+      padding: 16px;
+      box-shadow: 0 2px 8px rgba(0,0,0,0.06);
+    }
+    .memo-textarea {
+      width: 100%;
+      min-height: 200px;
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      padding: 12px;
+      font-size: 15px;
+      resize: vertical;
+      font-family: inherit;
+    }
+    .memo-hint { font-size: 12px; color: var(--text-secondary); margin-top: 8px; }
+    .focus-overlay {
+      position: fixed;
+      top: 0; left: 0; right: 0; bottom: 0;
+      background: linear-gradient(135deg, var(--primary-dark) 0%, #000 100%);
+      color: white;
+      z-index: 1000;
+      display: none;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      padding: 24px;
+      text-align: center;
+    }
+    .focus-overlay.active { display: flex; }
+    .focus-timer {
+      font-size: 72px;
+      font-weight: 200;
+      font-variant-numeric: tabular-nums;
+      margin: 24px 0;
+    }
+    .focus-task { font-size: 18px; opacity: 0.9; max-width: 320px; }
+    .focus-message {
+      font-size: 14px;
+      opacity: 0.7;
+      margin-top: 16px;
+      line-height: 1.8;
+    }
+    .focus-btn {
+      margin-top: 40px;
+      background: white;
+      color: var(--primary-dark);
+      border: none;
+      padding: 14px 48px;
+      border-radius: 30px;
+      font-size: 16px;
+      font-weight: 700;
+      cursor: pointer;
+    }
+    .modal {
+      position: fixed;
+      top: 0; left: 0; right: 0; bottom: 0;
+      background: rgba(0,0,0,0.5);
+      z-index: 999;
+      display: none;
+      align-items: center;
+      justify-content: center;
+      padding: 20px;
+    }
+    .modal.active { display: flex; }
+    .modal-content {
+      background: white;
+      border-radius: 20px;
+      padding: 24px;
+      max-width: 340px;
+      width: 100%;
+      text-align: center;
+    }
+    .modal-title { font-size: 18px; font-weight: 700; margin-bottom: 12px; }
+    .modal-text { font-size: 14px; color: var(--text-secondary); margin-bottom: 20px; }
+    .modal-btns { display: flex; gap: 10px; }
+    .modal-btn {
+      flex: 1;
+      padding: 12px;
+      border-radius: 12px;
+      border: none;
+      font-size: 14px;
+      font-weight: 600;
+      cursor: pointer;
+    }
+    .modal-cancel { background: #f5f5f5; color: var(--text); }
+    .modal-confirm { background: var(--danger); color: white; }
+    .empty-state {
+      text-align: center;
+      padding: 40px 20px;
+      color: var(--text-secondary);
+    }
+    .empty-state .icon { font-size: 48px; margin-bottom: 12px; }
+    .history-item {
+      display: flex;
+      justify-content: space-between;
+      padding: 12px;
+      border-bottom: 1px solid var(--border);
+    }
+    .history-item:last-child { border-bottom: none; }
+    .install-tip {
+      background: #e3f2fd;
+      border-radius: 12px;
+      padding: 12px;
+      font-size: 13px;
+      color: #1565c0;
+      margin-bottom: 12px;
+      display: none;
+    }
+    .install-tip.active { display: block; }
+    .bottom-nav {
+      position: fixed;
+      bottom: 0;
+      left: 0;
+      right: 0;
+      background: white;
+      display: flex;
+      justify-content: space-around;
+      padding: 8px 0 calc(8px + env(safe-area-inset-bottom));
+      box-shadow: 0 -2px 10px rgba(0,0,0,0.08);
+      z-index: 90;
+    }
+    .bottom-nav button {
+      background: none;
+      border: none;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 2px;
+      font-size: 11px;
+      color: var(--text-secondary);
+      cursor: pointer;
+      padding: 6px 12px;
+    }
+    .bottom-nav button.active { color: var(--primary); }
+    .bottom-nav button .icon { font-size: 22px; }
+    .quote-box {
+      background: linear-gradient(135deg, #fff8e1 0%, #ffecb3 100%);
+      border-radius: 12px;
+      padding: 14px;
+      font-size: 13px;
+      color: #5d4037;
+      margin-bottom: 12px;
+      border-left: 4px solid var(--warning);
+    }
+    .discipline-alert {
+      background: #ffebee;
+      border: 1px solid #ffcdd2;
+      border-radius: 12px;
+      padding: 12px;
+      margin-bottom: 12px;
+      color: var(--danger);
+      font-size: 13px;
+      display: none;
+    }
+    .discipline-alert.active { display: block; }
+  </style>
+</head>
+<body>
+  <div class="app-bar">
+    <h1>徐云工作台</h1>
+    <div class="date" id="currentDate">加载中...</div>
+    <div class="header-stats">
+      <div class="stat-chip">📊 完成 <span id="doneCount">0</span>/<span id="totalCount">0</span></div>
+      <div class="stat-chip">⭐ 得分 <span id="scoreDisplay">0</span></div>
+    </div>
+  </div>
+
+  <div class="container">
+    <div class="install-tip" id="installTip">
+      提示：点击浏览器菜单 →「添加到主屏幕」，即可像原生 App 一样放在桌面使用。
+    </div>
+
+    <div class="progress-card">
+      <svg class="progress-ring" viewBox="0 0 80 80">
+        <circle class="bg" cx="40" cy="40" r="36"></circle>
+        <circle class="fg" cx="40" cy="40" r="36" stroke-dasharray="226" stroke-dashoffset="226"></circle>
+      </svg>
+      <div class="progress-info">
+        <h3>今日执行进度</h3>
+        <p>完成 <strong id="progressPercent">0%</strong> · 得分 <span class="score" id="progressScore">0</span></p>
+      </div>
+    </div>
+
+    <div class="quote-box" id="quoteBox">
+      严格执行，不拖延。今天的自律，是明天的自由。
+    </div>
+
+    <div class="discipline-alert" id="disciplineAlert">
+      你还有未完成的固定任务，请立即执行，不要玩手机！
+    </div>
+
+    <div class="nav-menu">
+      <button class="nav-btn active" data-page="plan">
+        <span class="icon">📋</span>每日计划
+      </button>
+      <button class="nav-btn" data-page="study">
+        <span class="icon">⏱️</span>专注计时
+      </button>
+      <button class="nav-btn" data-page="memo">
+        <span class="icon">📝</span>备忘录
+      </button>
+      <button class="nav-btn" data-page="stats">
+        <span class="icon">📊</span>执行统计
+      </button>
+    </div>
+
+    <div id="page-plan" class="page active">
+      <div class="section-title">⏰ 今日时间轴</div>
+      <div class="timeline" id="timeline">
+        <!-- 任务由 JS 生成 -->
+      </div>
+    </div>
+
+    <div id="page-study" class="page">
+      <div class="section-title">🎯 专注学习</div>
+      <div class="card" id="studyCard">
+        <p style="font-size:14px;color:var(--text-secondary);margin-bottom:12px;">
+          固定学习时长：AI 学习 3 小时 + 考编学习 4 小时，必须计时完成。
+        </p>
+        <div id="studyTasks">
+          <!-- 学习任务由 JS 生成 -->
+        </div>
+      </div>
+    </div>
+
+    <div id="page-memo" class="page">
+      <div class="section-title">📝 备忘录</div>
+      <div class="card">
+        <textarea class="memo-textarea" id="memoText" placeholder="随时记录灵感、待办、重要事项..."></textarea>
+        <div class="memo-hint">自动保存。可记录临时事项、学习心得、明日计划等。</div>
+      </div>
+    </div>
+
+    <div id="page-stats" class="page">
+      <div class="section-title">📊 本周执行</div>
+      <div class="card" id="historyList">
+        <div class="empty-state">
+          <div class="icon">📈</div>
+          <div>暂无历史数据</div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="bottom-nav">
+    <button class="active" data-page="plan"><span class="icon">📋</span>计划</button>
+    <button data-page="study"><span class="icon">⏱️</span>专注</button>
+    <button data-page="memo"><span class="icon">📝</span>备忘</button>
+    <button data-page="stats"><span class="icon">📊</span>统计</button>
+  </div>
+
+  <!-- 专注覆盖层 -->
+  <div class="focus-overlay" id="focusOverlay">
+    <div class="focus-task" id="focusTaskName">正在专注</div>
+    <div class="focus-timer" id="focusTimer">00:00:00</div>
+    <div class="focus-message">
+      手机已锁定<br>
+      专注期间禁止刷视频、聊天、玩游戏<br>
+      坚持就是胜利
+    </div>
+    <button class="focus-btn" id="stopFocusBtn">结束专注</button>
+  </div>
+
+  <!-- 退出确认弹窗 -->
+  <div class="modal" id="quitModal">
+    <div class="modal-content">
+      <div class="modal-title">确定要退出专注？</div>
+      <div class="modal-text">中途退出会被记录，并影响今日执行评分。请再坚持一下！</div>
+      <div class="modal-btns">
+        <button class="modal-btn modal-cancel" id="cancelQuit">继续坚持</button>
+        <button class="modal-btn modal-confirm" id="confirmQuit">仍要退出</button>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    // ========== 数据配置 ==========
+    const TASK_TEMPLATE = [
+      { id: 'm-1', title: '三七粉 + 姜枣茶', desc: '温水冲服，空腹饮用', time: '07:00', category: 'health', tag: '养生', score: 5 },
+      { id: 's-1', title: '早运动 1 小时', desc: '有氧/拉伸/八段锦均可', time: '07:30', category: 'sport', tag: '运动', score: 10, duration: 60 },
+      { id: 'r-1', title: '第一次水丸', desc: '按时服用', time: '08:30', category: 'routine', tag: '常规', score: 5 },
+      { id: 'st-1', title: 'AI 学习', desc: '深度学习/项目/论文，必须专注计时', time: '09:00', category: 'study', tag: '学习', score: 20, duration: 180 },
+      { id: 'r-2', title: '第二次水丸', desc: '按时服用', time: '12:00', category: 'routine', tag: '常规', score: 5 },
+      { id: 'st-2', title: '考编学习', desc: '刷题/听课/背书，必须专注计时', time: '14:00', category: 'study', tag: '学习', score: 25, duration: 240 },
+      { id: 'r-3', title: '第三次水丸', desc: '按时服用', time: '18:00', category: 'routine', tag: '常规', score: 5 },
+      { id: 's-2', title: '晚运动 1 小时', desc: '散步/瑜伽/力量训练', time: '18:30', category: 'sport', tag: '运动', score: 10, duration: 60 },
+      { id: 'h-1', title: '热敷肚子 + 泡脚', desc: '热敷 20 分钟，泡脚 20 分钟', time: '20:30', category: 'health', tag: '养生', score: 10 },
+    ];
+
+    const QUOTES = [
+      '严格执行，不拖延。今天的自律，是明天的自由。',
+      '少玩手机，多做一件事，离目标就近一步。',
+      '健康是 1，其他都是 0。',
+      '现在的坚持，是未来的从容。',
+      '你不是没时间，你只是没开始。',
+    ];
+
+    // ========== 状态 ==========
+    let state = {
+      tasks: [],
+      memo: '',
+      history: {},
+      focus: null, // { taskId, startTime, elapsed }
+    };
+
+    let focusInterval = null;
+
+    // ========== 工具函数 ==========
+    function getTodayKey() {
+      const now = new Date();
+      // 以凌晨 4 点为界算一天
+      if (now.getHours() < 4) {
+        now.setDate(now.getDate() - 1);
+      }
+      return now.toISOString().split('T')[0];
+    }
+
+    function loadState() {
+      const saved = localStorage.getItem('xuyun-workbench');
+      if (saved) {
+        const parsed = JSON.parse(saved);
+        // 如果保存的不是今天，则归档到历史并重置
+        if (parsed.date && parsed.date !== getTodayKey()) {
+          archiveDay(parsed.date, parsed.tasks);
+          state = createFreshState();
+        } else {
+          state = { ...createFreshState(), ...parsed };
+          // 确保任务列表完整
+          state.tasks = mergeTasks(parsed.tasks || []);
+        }
+      } else {
+        state = createFreshState();
+      }
+    }
+
+    function createFreshState() {
+      return {
+        date: getTodayKey(),
+        tasks: TASK_TEMPLATE.map(t => ({ ...t, done: false, focusDone: 0, quitCount: 0 })),
+        memo: '',
+        history: {},
+        focus: null,
+      };
+    }
+
+    function mergeTasks(savedTasks) {
+      return TASK_TEMPLATE.map(template => {
+        const saved = savedTasks.find(t => t.id === template.id);
+        return saved ? { ...template, ...saved } : { ...template, done: false, focusDone: 0, quitCount: 0 };
+      });
+    }
+
+    function saveState() {
+      localStorage.setItem('xuyun-workbench', JSON.stringify(state));
+    }
+
+    function archiveDay(date, tasks) {
+      const history = JSON.parse(localStorage.getItem('xuyun-history') || '{}');
+      const completed = tasks.filter(t => t.done).length;
+      const totalScore = tasks.filter(t => t.done).reduce((sum, t) => sum + (t.score || 0), 0);
+      const maxScore = tasks.reduce((sum, t) => sum + (t.score || 0), 0);
+      history[date] = { completed, total: tasks.length, score: totalScore, maxScore };
+      localStorage.setItem('xuyun-history', JSON.stringify(history));
+      state.history = history;
+    }
+
+    function formatTime(minutes) {
+      const h = Math.floor(minutes / 60);
+      const m = minutes % 60;
+      return h > 0 ? `${h}小时${m}分钟` : `${m}分钟`;
+    }
+
+    function formatClock(seconds) {
+      const h = Math.floor(seconds / 3600);
+      const m = Math.floor((seconds % 3600) / 60);
+      const s = seconds % 60;
+      return [h, m, s].map(v => String(v).padStart(2, '0')).join(':');
+    }
+
+    // ========== 渲染 ==========
+    function renderHeader() {
+      const now = new Date();
+      const weekDays = ['日', '一', '二', '三', '四', '五', '六'];
+      document.getElementById('currentDate').textContent =
+        `${now.getFullYear()}年${now.getMonth()+1}月${now.getDate()}日 星期${weekDays[now.getDay()]}`;
+      
+      const done = state.tasks.filter(t => t.done).length;
+      const total = state.tasks.length;
+      const score = state.tasks.filter(t => t.done).reduce((sum, t) => sum + (t.score || 0), 0);
+      const maxScore = state.tasks.reduce((sum, t) => sum + (t.score || 0), 0);
+      
+      document.getElementById('doneCount').textContent = done;
+      document.getElementById('totalCount').textContent = total;
+      document.getElementById('scoreDisplay').textContent = score;
+      document.getElementById('progressScore').textContent = score;
+      document.getElementById('progressPercent').textContent = `${Math.round((done / total) * 100) || 0}%`;
+      
+      // 进度环
+      const circle = document.querySelector('.progress-ring .fg');
+      if (circle) {
+        const radius = 36;
+        const circumference = 2 * Math.PI * radius;
+        const pct = total > 0 ? done / total : 0;
+        circle.style.strokeDasharray = `${circumference} ${circumference}`;
+        circle.style.strokeDashoffset = circumference * (1 - pct);
+      }
+
+      // 纪律提醒：如果有固定学习任务未完成且到了时间
+      const unfinished = state.tasks.filter(t => !t.done && isOverdue(t.time));
+      document.getElementById('disciplineAlert').classList.toggle('active', unfinished.length > 0);
+    }
+
+    function isOverdue(timeStr) {
+      const now = new Date();
+      const [h, m] = timeStr.split(':').map(Number);
+      const taskTime = new Date();
+      taskTime.setHours(h, m, 0, 0);
+      return now > taskTime;
+    }
+
+    function renderTimeline() {
+      const container = document.getElementById('timeline');
+      container.innerHTML = '';
+      
+      state.tasks.forEach(task => {
+        const item = document.createElement('div');
+        item.className = `task-item ${task.category} ${task.done ? 'done' : ''}`;
+        item.innerHTML = `
+          <div class="task-checkbox" onclick="toggleTask('${task.id}')">
+            ${task.done ? '✓' : ''}
+          </div>
+          <div class="task-content">
+            <div class="task-time">${task.time} · <span class="tag tag-${task.category}">${task.tag}</span></div>
+            <div class="task-title">${task.title}</div>
+            <div class="task-desc">${task.desc}</div>
+            ${task.duration ? `<div class="task-desc">目标时长：${formatTime(task.duration)} ${task.focusDone > 0 ? `| 已完成 ${formatTime(task.focusDone)}` : ''}</div>` : ''}
+            <div class="task-actions">
+              ${task.category === 'study' && !task.done ? `<button class="btn-sm btn-primary-sm" onclick="startFocus('${task.id}')">开始专注</button>` : ''}
+              ${task.done && task.category === 'study' ? `<button class="btn-sm btn-warning-sm" onclick="resetTask('${task.id}')">重新计时</button>` : ''}
+            </div>
+          </div>
+        `;
+        container.appendChild(item);
+      });
+    }
+
+    function renderStudyPage() {
+      const container = document.getElementById('studyTasks');
+      container.innerHTML = '';
+      
+      const studyTasks = state.tasks.filter(t => t.category === 'study');
+      studyTasks.forEach(task => {
+        const div = document.createElement('div');
+        div.style.cssText = 'padding:14px 0; border-bottom:1px solid var(--border);';
+        div.innerHTML = `
+          <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:6px;">
+            <strong>${task.title}</strong>
+            <span style="font-size:13px;color:${task.done ? 'var(--success)' : 'var(--text-secondary)'}">
+              ${task.done ? '✓ 已完成' : '进行中'}
+            </span>
+          </div>
+          <div style="font-size:13px;color:var(--text-secondary);margin-bottom:10px;">
+            目标 ${formatTime(task.duration)} · 已专注 ${formatTime(task.focusDone)} · 中途退出 ${task.quitCount} 次
+          </div>
+          <div style="background:#e8f5e9;height:8px;border-radius:4px;overflow:hidden;margin-bottom:10px;">
+            <div style="background:var(--primary);height:100%;width:${Math.min(100, (task.focusDone / task.duration) * 100)}%;"></div>
+          </div>
+          ${!task.done ? `<button class="btn-sm btn-primary-sm" onclick="startFocus('${task.id}')">开始专注计时</button>` : ''}
+        `;
+        container.appendChild(div);
+      });
+    }
+
+    function renderStats() {
+      const history = JSON.parse(localStorage.getItem('xuyun-history') || '{}');
+      const container = document.getElementById('historyList');
+      const dates = Object.keys(history).sort().reverse();
+      
+      if (dates.length === 0) {
+        container.innerHTML = `
+          <div class="empty-state">
+            <div class="icon">📈</div>
+            <div>暂无历史数据</div>
+            <div style="font-size:12px;margin-top:8px;">坚持完成今日计划，明天就能看到统计</div>
+          </div>
+        `;
+        return;
+      }
+      
+      container.innerHTML = dates.map(date => {
+        const h = history[date];
+        const pct = Math.round((h.score / h.maxScore) * 100);
+        return `
+          <div class="history-item">
+            <div>
+              <div style="font-weight:600;">${date}</div>
+              <div style="font-size:12px;color:var(--text-secondary);">完成 ${h.completed}/${h.total} 项</div>
+            </div>
+            <div style="text-align:right;">
+              <div style="font-weight:700;color:${pct >= 80 ? 'var(--success)' : pct >= 60 ? 'var(--warning)' : 'var(--danger)'}">${pct}%</div>
+              <div style="font-size:12px;color:var(--text-secondary);">${h.score}/${h.maxScore} 分</div>
+            </div>
+          </div>
+        `;
+      }).join('');
+    }
+
+    // ========== 交互 ==========
+    function toggleTask(id) {
+      const task = state.tasks.find(t => t.id === id);
+      if (!task) return;
+      
+      // 学习任务必须通过专注计时完成
+      if (task.category === 'study' && !task.done && task.focusDone < task.duration) {
+        showModal('学习任务需通过专注计时完成', '请点击「开始专注」并坚持到目标时长，系统会自动打勾。');
+        return;
+      }
+      
+      task.done = !task.done;
+      saveState();
+      refreshAll();
+    }
+
+    function resetTask(id) {
+      const task = state.tasks.find(t => t.id === id);
+      if (!task) return;
+      task.done = false;
+      task.focusDone = 0;
+      saveState();
+      refreshAll();
+    }
+
+    function startFocus(id) {
+      const task = state.tasks.find(t => t.id === id);
+      if (!task) return;
+      
+      if (state.focus) {
+        showModal('已有进行中的专注', '请先结束当前专注任务。');
+        return;
+      }
+      
+      state.focus = {
+        taskId: id,
+        startTime: Date.now(),
+        elapsed: task.focusDone * 60,
+      };
+      saveState();
+      openFocusOverlay();
+    }
+
+    function openFocusOverlay() {
+      const overlay = document.getElementById('focusOverlay');
+      const task = state.tasks.find(t => t.id === state.focus.taskId);
+      document.getElementById('focusTaskName').textContent = `正在专注：${task.title}`;
+      overlay.classList.add('active');
+      
+      focusInterval = setInterval(() => {
+        const elapsed = Math.floor((Date.now() - state.focus.startTime) / 1000) + state.focus.elapsed;
+        document.getElementById('focusTimer').textContent = formatClock(elapsed);
+      }, 1000);
+    }
+
+    function stopFocus() {
+      document.getElementById('quitModal').classList.add('active');
+    }
+
+    function confirmQuitFocus() {
+      if (!state.focus) return;
+      const task = state.tasks.find(t => t.id === state.focus.taskId);
+      const elapsed = Math.floor((Date.now() - state.focus.startTime) / 1000) + state.focus.elapsed;
+      const minutes = Math.floor(elapsed / 60);
+      
+      task.focusDone = minutes;
+      task.quitCount += 1;
+      
+      if (minutes >= task.duration) {
+        task.done = true;
+      }
+      
+      state.focus = null;
+      clearInterval(focusInterval);
+      document.getElementById('focusOverlay').classList.remove('active');
+      document.getElementById('quitModal').classList.remove('active');
+      saveState();
+      refreshAll();
+    }
+
+    function cancelQuitFocus() {
+      document.getElementById('quitModal').classList.remove('active');
+    }
+
+    function showModal(title, text) {
+      document.querySelector('#quitModal .modal-title').textContent = title;
+      document.querySelector('#quitModal .modal-text').textContent = text;
+      document.getElementById('quitModal').classList.add('active');
+      document.getElementById('confirmQuit').style.display = 'none';
+      document.getElementById('cancelQuit').textContent = '知道了';
+      document.getElementById('cancelQuit').onclick = () => {
+        document.getElementById('quitModal').classList.remove('active');
+        restoreQuitModal();
+      };
+    }
+
+    function restoreQuitModal() {
+      document.querySelector('#quitModal .modal-title').textContent = '确定要退出专注？';
+      document.querySelector('#quitModal .modal-text').textContent = '中途退出会被记录，并影响今日执行评分。请再坚持一下！';
+      document.getElementById('confirmQuit').style.display = 'inline-block';
+      document.getElementById('cancelQuit').textContent = '继续坚持';
+      document.getElementById('cancelQuit').onclick = cancelQuitFocus;
+    }
+
+    // ========== 页面切换 ==========
+    function switchPage(pageName) {
+      document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
+      document.querySelectorAll('.nav-btn, .bottom-nav button').forEach(b => b.classList.remove('active'));
+      document.getElementById(`page-${pageName}`).classList.add('active');
+      document.querySelectorAll(`[data-page="${pageName}"]`).forEach(b => b.classList.add('active'));
+      
+      if (pageName === 'study') renderStudyPage();
+      if (pageName === 'stats') renderStats();
+    }
+
+    function refreshAll() {
+      renderHeader();
+      renderTimeline();
+      renderStudyPage();
+      renderStats();
+    }
+
+    // ========== 初始化 ==========
+    document.addEventListener('DOMContentLoaded', () => {
+      loadState();
+      
+      // 恢复未完成的专注
+      if (state.focus) {
+        openFocusOverlay();
+      }
+      
+      // 每日名言
+      const dayIndex = new Date().getDate() % QUOTES.length;
+      document.getElementById('quoteBox').textContent = QUOTES[dayIndex];
+      
+      // 事件绑定
+      document.querySelectorAll('[data-page]').forEach(btn => {
+        btn.addEventListener('click', () => switchPage(btn.dataset.page));
+      });
+      
+      document.getElementById('stopFocusBtn').addEventListener('click', stopFocus);
+      document.getElementById('confirmQuit').addEventListener('click', confirmQuitFocus);
+      document.getElementById('cancelQuit').addEventListener('click', cancelQuitFocus);
+      
+      const memoEl = document.getElementById('memoText');
+      memoEl.value = state.memo;
+      memoEl.addEventListener('input', (e) => {
+        state.memo = e.target.value;
+        saveState();
+      });
+      
+      // 安装提示
+      if ('BeforeInstallPromptEvent' in window || /iPhone|iPad|iPod/.test(navigator.userAgent)) {
+        document.getElementById('installTip').classList.add('active');
+      }
+      
+      refreshAll();
+    });
+
+    // Service Worker 注册
+    if ('serviceWorker' in navigator) {
+      navigator.serviceWorker.register('sw.js').catch(() => {});
+    }
+  </script>
+</body>
+</html>
