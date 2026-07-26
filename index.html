@@ -32,6 +32,24 @@
       color: var(--text);
       line-height: 1.5;
       padding-bottom: 120px;
+      position: relative;
+      min-height: 100vh;
+    }
+    .bg-layer {
+      position: fixed;
+      top: 0; left: 0; right: 0; bottom: 0;
+      z-index: -1;
+      background-size: cover;
+      background-position: center;
+      background-repeat: no-repeat;
+      transition: opacity 0.5s;
+    }
+    .bg-overlay {
+      position: fixed;
+      top: 0; left: 0; right: 0; bottom: 0;
+      z-index: -1;
+      background: rgba(245, 249, 255, 0.88);
+      backdrop-filter: blur(2px);
     }
     .app-bar {
       background: linear-gradient(135deg, var(--primary) 0%, var(--primary-dark) 100%);
@@ -355,6 +373,8 @@
   </style>
 </head>
 <body>
+  <div class="bg-layer" id="bgLayer"></div>
+  <div class="bg-overlay" id="bgOverlay"></div>
   <div class="app-bar">
     <h1>徐云工作台</h1>
     <div class="date" id="currentDate">加载中...</div>
@@ -1058,18 +1078,55 @@
       `;
     }
 
-    // ========== 皮肤系统 ==========
+    // ========== 皮肤系统（含图片背景）==========
     const THEMES = [
-      { id: 'blue', name: '海洋蓝', primary: '#4a90e2', dark: '#2c6fb8', bg: '#f5f9ff', accent: '#a8d5ff' },
-      { id: 'green', name: '森林绿', primary: '#2e7d32', dark: '#1b5e20', bg: '#f1f8f2', accent: '#a5d6a7' },
-      { id: 'purple', name: '薰衣草', primary: '#7e57c2', dark: '#5e35b1', bg: '#f5f0fb', accent: '#d1c4e9' },
-      { id: 'orange', name: '日落橙', primary: '#fb8c00', dark: '#ef6c00', bg: '#fff8f0', accent: '#ffcc80' },
-      { id: 'pink', name: '樱花粉', primary: '#ec407a', dark: '#c2185b', bg: '#fdf0f5', accent: '#f8bbd0' },
-      { id: 'teal', name: '碧波青', primary: '#00897b', dark: '#00695c', bg: '#f0fafa', accent: '#80cbc4' },
-      { id: 'indigo', name: '靛蓝夜', primary: '#3f51b5', dark: '#283593', bg: '#f5f6ff', accent: '#9fa8da' },
-      { id: 'brown', name: '大地棕', primary: '#795548', dark: '#5d4037', bg: '#faf6f3', accent: '#bcaaa4' },
-      { id: 'cyan', name: '天空青', primary: '#0288d1', dark: '#01579b', bg: '#f0f9ff', accent: '#81d4fa' },
-      { id: 'grey', name: '极简灰', primary: '#546e7a', dark: '#37474f', bg: '#f5f7f8', accent: '#b0bec5' },
+      { id: 'blue', name: '海洋蓝', primary: '#4a90e2', dark: '#2c6fb8', bg: '#f5f9ff', accent: '#a8d5ff', overlay: 0.88 },
+      { id: 'green', name: '森林绿', primary: '#2e7d32', dark: '#1b5e20', bg: '#f1f8f2', accent: '#a5d6a7', overlay: 0.88 },
+      { id: 'purple', name: '薰衣草', primary: '#7e57c2', dark: '#5e35b1', bg: '#f5f0fb', accent: '#d1c4e9', overlay: 0.88 },
+      { id: 'orange', name: '日落橙', primary: '#fb8c00', dark: '#ef6c00', bg: '#fff8f0', accent: '#ffcc80', overlay: 0.88 },
+      { id: 'pink', name: '樱花粉', primary: '#ec407a', dark: '#c2185b', bg: '#fdf0f5', accent: '#f8bbd0', overlay: 0.88 },
+      { id: 'teal', name: '碧波青', primary: '#00897b', dark: '#00695c', bg: '#f0fafa', accent: '#80cbc4', overlay: 0.88 },
+      { id: 'indigo', name: '靛蓝夜', primary: '#3f51b5', dark: '#283593', bg: '#f5f6ff', accent: '#9fa8da', overlay: 0.88 },
+      { id: 'brown', name: '大地棕', primary: '#795548', dark: '#5d4037', bg: '#faf6f3', accent: '#bcaaa4', overlay: 0.88 },
+      { id: 'cyan', name: '天空青', primary: '#0288d1', dark: '#01579b', bg: '#f0f9ff', accent: '#81d4fa', overlay: 0.88 },
+      { id: 'grey', name: '极简灰', primary: '#546e7a', dark: '#37474f', bg: '#f5f7f8', accent: '#b0bec5', overlay: 0.88 },
+    ];
+
+    // 图片背景库（3 大类，每类 5 张，免费 Unsplash 源）
+    const BG_CATEGORIES = [
+      {
+        id: 'study',
+        name: '📚 学习激励',
+        bgs: [
+          { url: 'https://images.unsplash.com/photo-1481627834876-b7833e8f5570?w=800&q=80', desc: '书架图书馆' },
+          { url: 'https://images.unsplash.com/photo-1456513080510-7bf3a84b82f8?w=800&q=80', desc: '专注读书' },
+          { url: 'https://images.unsplash.com/photo-1513258496099-48168024aec0?w=800&q=80', desc: '笔记本与笔' },
+          { url: 'https://images.unsplash.com/photo-1497633762265-9d179a990aa6?w=800&q=80', desc: '书桌时光' },
+          { url: 'https://images.unsplash.com/photo-1524995997946-a1c2e315a42f?w=800&q=80', desc: '努力学习' },
+        ],
+      },
+      {
+        id: 'nature',
+        name: '🏔️ 大自然',
+        bgs: [
+          { url: 'https://images.unsplash.com/photo-1506905925346-21bda4d32df4?w=800&q=80', desc: '雪山日出' },
+          { url: 'https://images.unsplash.com/photo-1441974231531-c6227db76b6e?w=800&q=80', desc: '森林阳光' },
+          { url: 'https://images.unsplash.com/photo-1507525428034-b723cf961d3e?w=800&q=80', desc: '海边沙滩' },
+          { url: 'https://images.unsplash.com/photo-1470071459604-3b5ec3a7fe05?w=800&q=80', desc: '山间晨雾' },
+          { url: 'https://images.unsplash.com/photo-1426604966848-d7adac402bff?w=800&q=80', desc: '绿色山谷' },
+        ],
+      },
+      {
+        id: 'inspire',
+        name: '🌟 励志风景',
+        bgs: [
+          { url: 'https://images.unsplash.com/photo-1419242902214-272b3f66ee7a?w=800&q=80', desc: '星空银河' },
+          { url: 'https://images.unsplash.com/photo-1502082553048-f009c37129b9?w=800&q=80', desc: '金色秋林' },
+          { url: 'https://images.unsplash.com/photo-1472214103451-9374bd1c798e?w=800&q=80', desc: '山顶远眺' },
+          { url: 'https://images.unsplash.com/photo-1469474968028-56623f02e42e?w=800&q=80', desc: '阳光穿透' },
+          { url: 'https://images.unsplash.com/photo-1447752875215-b2761acb3c5d?w=800&q=80', desc: '林间小路' },
+        ],
+      },
     ];
 
     function applyTheme(themeId) {
@@ -1080,54 +1137,105 @@
       root.style.setProperty('--bg', theme.bg);
       root.style.setProperty('--accent', theme.accent);
       
-      // 更新 app-bar 渐变
       const appBar = document.querySelector('.app-bar');
       if (appBar) {
         appBar.style.background = `linear-gradient(135deg, ${theme.primary} 0%, ${theme.dark} 100%)`;
       }
       
-      // 更新 theme-color
       document.querySelector('meta[name="theme-color"]').setAttribute('content', theme.primary);
       
-      // 保存选择
+      // 更新遮罩透明度
+      const overlay = document.getElementById('bgOverlay');
+      if (overlay) {
+        overlay.style.background = `rgba(255, 255, 255, ${theme.overlay})`;
+      }
+      
       localStorage.setItem('xuyun-theme', themeId);
     }
 
+    function applyBackground(bgUrl) {
+      const bgLayer = document.getElementById('bgLayer');
+      if (bgLayer && bgUrl) {
+        bgLayer.style.backgroundImage = `url('${bgUrl}')`;
+      }
+      localStorage.setItem('xuyun-bg', bgUrl);
+    }
+
     function getDailyTheme() {
-      // 每天自动轮换一个主题
       const dayOfYear = Math.floor((Date.now() - new Date(new Date().getFullYear(), 0, 0)) / 86400000);
       return THEMES[dayOfYear % THEMES.length].id;
+    }
+
+    function getDailyBackground() {
+      // 每天从不同类别随机选一张
+      const dayOfYear = Math.floor((Date.now() - new Date(new Date().getFullYear(), 0, 0)) / 86400000);
+      const category = BG_CATEGORIES[dayOfYear % BG_CATEGORIES.length];
+      const bgIndex = dayOfYear % category.bgs.length;
+      return { ...category.bgs[bgIndex], categoryId: category.id };
     }
 
     function renderThemePage() {
       const container = document.getElementById('themeGrid');
       const currentTheme = localStorage.getItem('xuyun-theme') || getDailyTheme();
+      const currentBg = localStorage.getItem('xuyun-bg') || '';
+      const dailyBg = getDailyBackground();
       
-      container.innerHTML = `
-        <div style="margin-bottom:12px;padding:10px;background:${THEMES.find(t=>t.id===getDailyTheme()).accent}33;border-radius:8px;font-size:12px;color:var(--text-secondary);">
-          📅 今日自动推荐：<strong>${THEMES.find(t=>t.id===getDailyTheme()).name}</strong>
-        </div>
-        <div style="display:grid;grid-template-columns:repeat(2,1fr);gap:10px;">
-          ${THEMES.map(t => `
-            <div onclick="applyTheme('${t.id}');renderThemePage();" 
-                 style="padding:14px;border-radius:10px;cursor:pointer;border:2px solid ${currentTheme===t.id?t.primary:'transparent'};background:${t.bg};">
-              <div style="display:flex;gap:6px;margin-bottom:8px;">
-                <div style="width:20px;height:20px;border-radius:50%;background:${t.primary};"></div>
-                <div style="width:20px;height:20px;border-radius:50%;background:${t.dark};"></div>
-                <div style="width:20px;height:20px;border-radius:50%;background:${t.accent};"></div>
-              </div>
-              <div style="font-size:13px;font-weight:600;color:${t.dark};">${t.name}</div>
-              ${currentTheme===t.id ? '<div style="font-size:11px;color:'+t.primary+';margin-top:2px;">✓ 当前使用</div>' : ''}
-            </div>
-          `).join('')}
-        </div>
-        <div style="margin-top:12px;">
-          <button onclick="applyTheme(getDailyTheme());renderThemePage();" 
-                  style="width:100%;padding:10px;background:var(--primary);color:white;border:none;border-radius:8px;font-size:13px;font-weight:600;cursor:pointer;">
-            🔄 恢复今日自动推荐
-          </button>
-        </div>
+      let html = `
+        <div style="margin-bottom:16px;">
+          <div style="font-size:13px;font-weight:700;color:var(--text);margin-bottom:8px;">🖼️ 背景图片</div>
+          <div style="margin-bottom:8px;padding:8px;background:var(--accent);border-radius:8px;font-size:11px;color:var(--text-secondary);">
+            📅 今日推荐：${dailyBg.categoryId === 'study' ? '📚 学习激励' : dailyBg.categoryId === 'nature' ? '🏔️ 大自然' : '🌟 励志风景'} - ${dailyBg.desc}
+          </div>
       `;
+      
+      BG_CATEGORIES.forEach(cat => {
+        html += `<div style="margin-bottom:12px;"><div style="font-size:12px;font-weight:600;color:var(--text-secondary);margin-bottom:6px;">${cat.name}</div>`;
+        html += '<div style="display:grid;grid-template-columns:repeat(3,1fr);gap:6px;">';
+        cat.bgs.forEach(bg => {
+          const isActive = currentBg === bg.url;
+          html += `<div onclick="applyBackground('${bg.url}');renderThemePage();" 
+                       style="height:60px;border-radius:8px;background-image:url('${bg.url}');background-size:cover;background-position:center;cursor:pointer;border:2px solid ${isActive?'var(--primary)':'transparent'};position:relative;">
+                   ${isActive?'<div style=\"position:absolute;bottom:2px;right:2px;background:var(--primary);color:white;font-size:9px;padding:1px 4px;border-radius:4px;\">✓</div>':''}
+                   </div>`;
+        });
+        html += '</div></div>';
+      });
+      
+      html += `
+        <button onclick="applyBackground(getDailyBackground().url);renderThemePage();" 
+                style="width:100%;padding:10px;background:var(--primary);color:white;border:none;border-radius:8px;font-size:13px;font-weight:600;cursor:pointer;margin-top:8px;">
+          🔄 用今日推荐背景
+        </button>
+        <button onclick="applyBackground('');renderThemePage();" 
+                style="width:100%;padding:10px;background:#f5f5f5;color:var(--text);border:none;border-radius:8px;font-size:13px;font-weight:600;cursor:pointer;margin-top:6px;">
+          ⬜ 关闭背景图（纯色）
+        </button>
+        </div>
+        <div style="margin-top:16px;border-top:1px solid var(--border);padding-top:16px;">
+          <div style="font-size:13px;font-weight:700;color:var(--text);margin-bottom:8px;">🎨 主题配色</div>
+          <div style="font-size:11px;color:var(--text-secondary);margin-bottom:6px;">📅 今日推荐：<strong>${THEMES.find(t=>t.id===getDailyTheme()).name}</strong></div>
+          <div style="display:grid;grid-template-columns:repeat(2,1fr);gap:8px;">
+      `;
+      
+      THEMES.forEach(t => {
+        html += `<div onclick="applyTheme('${t.id}');renderThemePage();" 
+                     style="padding:10px;border-radius:8px;cursor:pointer;border:2px solid ${currentTheme===t.id?t.primary:'transparent'};background:${t.bg};">
+                  <div style="display:flex;gap:4px;margin-bottom:4px;">
+                    <div style="width:16px;height:16px;border-radius:50%;background:${t.primary};"></div>
+                    <div style="width:16px;height:16px;border-radius:50%;background:${t.dark};"></div>
+                  </div>
+                  <div style="font-size:12px;font-weight:600;color:${t.dark};">${t.name}</div>
+                </div>`;
+      });
+      
+      html += `</div>
+        <button onclick="applyTheme(getDailyTheme());renderThemePage();" 
+                style="width:100%;padding:10px;background:var(--primary);color:white;border:none;border-radius:8px;font-size:13px;font-weight:600;cursor:pointer;margin-top:8px;">
+          🔄 恢复今日推荐配色
+        </button>
+      </div>`;
+      
+      container.innerHTML = html;
     }
 
     // ========== 页面切换 ==========
@@ -1157,6 +1265,14 @@
       // 应用主题（每天自动轮换，或用户手动选择）
       const savedTheme = localStorage.getItem('xuyun-theme');
       applyTheme(savedTheme || getDailyTheme());
+      
+      // 应用背景（每天自动轮换，或用户手动选择）
+      const savedBg = localStorage.getItem('xuyun-bg');
+      if (savedBg) {
+        applyBackground(savedBg);
+      } else {
+        applyBackground(getDailyBackground().url);
+      }
       
       // 恢复未完成的专注
       if (state.focus) {
