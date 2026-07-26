@@ -395,8 +395,14 @@
       <button class="nav-btn" data-page="study">
         <span class="icon">⏱️</span>专注计时
       </button>
+      <button class="nav-btn" data-page="mindful">
+        <span class="icon">🧘</span>正念视频
+      </button>
       <button class="nav-btn" data-page="memo">
         <span class="icon">📝</span>备忘录
+      </button>
+      <button class="nav-btn" data-page="theme">
+        <span class="icon">🎨</span>皮肤
       </button>
       <button class="nav-btn" data-page="stats">
         <span class="icon">📊</span>执行统计
@@ -430,6 +436,26 @@
       </div>
     </div>
 
+    <div id="page-mindful" class="page">
+      <div class="section-title">🧘 今日正念推荐</div>
+      <div class="card" id="mindfulCard">
+        <p style="font-size:14px;color:var(--text-secondary);margin-bottom:12px;">
+          每天 3 小时，3 位主流正念老师轮换。点击下方链接直接观看。
+        </p>
+        <div id="mindfulList"></div>
+      </div>
+    </div>
+
+    <div id="page-theme" class="page">
+      <div class="section-title">🎨 皮肤切换</div>
+      <div class="card">
+        <p style="font-size:14px;color:var(--text-secondary);margin-bottom:12px;">
+          每天自动轮换一个主题，也可手动选择喜欢的。
+        </p>
+        <div id="themeGrid"></div>
+      </div>
+    </div>
+
     <div id="page-stats" class="page">
       <div class="section-title">📊 本周执行</div>
       <div class="card" id="historyList">
@@ -444,8 +470,9 @@
   <div class="bottom-nav">
     <button class="active" data-page="plan"><span class="icon">📋</span>计划</button>
     <button data-page="study"><span class="icon">⏱️</span>专注</button>
+    <button data-page="mindful"><span class="icon">🧘</span>正念</button>
     <button data-page="memo"><span class="icon">📝</span>备忘</button>
-    <button data-page="stats"><span class="icon">📊</span>统计</button>
+    <button data-page="theme"><span class="icon">🎨</span>皮肤</button>
   </div>
 
   <!-- 专注覆盖层 -->
@@ -536,40 +563,50 @@
       '08-31': { chapter: '总复盘', detail: '薄弱点专项突破 + 8 月知识地图总结' },
     };
 
-    // 正念推荐 31 天轮换（每日 3 小时）
-    const MINDFUL_PLAN = {
-      '08-01': { teacher: '胡婷婷', topic: '身体扫描入门', duration: 180 },
-      '08-02': { teacher: '一行禅师', topic: '呼吸禅修', duration: 180 },
-      '08-03': { teacher: '加措仁波切', topic: '当下即是（藏传正念）', duration: 180 },
-      '08-04': { teacher: 'Breathworks', topic: '3 分钟呼吸空间', duration: 180 },
-      '08-05': { teacher: 'Headspace 课程', topic: '焦虑缓解', duration: 180 },
-      '08-06': { teacher: '胡婷婷', topic: '情绪与正念', duration: 180 },
-      '08-07': { teacher: 'Jon Kabat-Zinn', topic: '正念减压 MBSR 第一课', duration: 180 },
-      '08-08': { teacher: '一念静心', topic: '静坐入门', duration: 180 },
-      '08-09': { teacher: '徐梵澄', topic: '东方正念经典解读', duration: 180 },
-      '08-10': { teacher: 'Mindful Schools', topic: '慈心禅', duration: 180 },
-      '08-11': { teacher: '加措仁波切', topic: '慈悲心观修', duration: 180 },
-      '08-12': { teacher: '胡婷婷', topic: '行走禅', duration: 180 },
-      '08-13': { teacher: '一行禅师', topic: '正念呼吸四步训练', duration: 180 },
-      '08-14': { teacher: 'Headspace', topic: '专注力训练', duration: 180 },
-      '08-15': { teacher: 'Breathworks', topic: '情绪急救', duration: 180 },
-      '08-16': { teacher: 'Jon Kabat-Zinn', topic: 'MBSR 第二课 - 觉察身体', duration: 180 },
-      '08-17': { teacher: '一念静心', topic: '睡前放松引导', duration: 180 },
-      '08-18': { teacher: 'Mindful Schools', topic: '正念倾听', duration: 180 },
-      '08-19': { teacher: '加措仁波切', topic: '无分别心观修', duration: 180 },
-      '08-20': { teacher: '胡婷婷', topic: '正念进食法', duration: 180 },
-      '08-21': { teacher: '一行禅师', topic: '正念的奇迹', duration: 180 },
-      '08-22': { teacher: 'Headspace', topic: '人际沟通正念', duration: 180 },
-      '08-23': { teacher: '徐梵澄', topic: '禅与正念', duration: 180 },
-      '08-24': { teacher: 'Breathworks', topic: '自我慈悲练习', duration: 180 },
-      '08-25': { teacher: 'Jon Kabat-Zinn', topic: 'MBSR 第三课 - 正念运动', duration: 180 },
-      '08-26': { teacher: '一念静心', topic: '晨间正念启动', duration: 180 },
-      '08-27': { teacher: 'Mindful Schools', topic: '应对不确定感', duration: 180 },
-      '08-28': { teacher: '加措仁波切', topic: '心安即是归处', duration: 180 },
-      '08-29': { teacher: '胡婷婷', topic: '整体复盘冥想', duration: 180 },
-      '08-30': { teacher: '一行禅师', topic: '一日禅回顾', duration: 180 },
-      '08-31': { teacher: '综合轮播', topic: '本月精选合集（自由选择）', duration: 180 },
-    };
+    // 正念推荐 31 天轮换（每日 3 小时，3 个老师各 1 小时）
+    // 每条带 bilibili 和 youtube 搜索链接，点开即可观看
+    const MINDFUL_TEACHERS = [
+      { name: '胡婷婷', platform: 'bilibili', searchUrl: 'https://search.bilibili.com/all?keyword=%E8%83%A1%E5%A9%B7%E5%A9%B7%E6%AD%A3%E5%BF%B5' },
+      { name: '一行禅师', platform: 'bilibili', searchUrl: 'https://search.bilibili.com/all?keyword=%E4%B8%80%E8%A1%8C%E7%A6%85%E5%B8%88%E6%AD%A3%E5%BF%B5' },
+      { name: '加措仁波切', platform: 'bilibili', searchUrl: 'https://search.bilibili.com/all?keyword=%E5%8A%A0%E6%8E%AA%E4%BB%81%E6%B3%A2%E5%88%87' },
+      { name: 'Jon Kabat-Zinn', platform: 'youtube', searchUrl: 'https://www.youtube.com/results?search_query=jon+kabat-zinn+mbsr+mindfulness' },
+      { name: 'Headspace', platform: 'youtube', searchUrl: 'https://www.youtube.com/results?search_query=headspace+guided+meditation' },
+      { name: '徐梵澄', platform: 'bilibili', searchUrl: 'https://search.bilibili.com/all?keyword=%E5%BE%90%E6%A2%B5%E6%BE%A7%E5%86%A5%E6%83%B3' },
+      { name: '一念静心', platform: 'bilibili', searchUrl: 'https://search.bilibili.com/all?keyword=%E4%B8%80%E5%BF%B5%E9%9D%99%E5%BF%83%E5%86%A5%E6%83%B3' },
+      { name: 'Breathworks', platform: 'youtube', searchUrl: 'https://www.youtube.com/results?search_query=breathworks+mindfulness+guided' },
+      { name: 'Mindful Schools', platform: 'youtube', searchUrl: 'https://www.youtube.com/results?search_query=mindful+schools+guided+meditation' },
+      { name: 'Tara Brach', platform: 'youtube', searchUrl: 'https://www.youtube.com/results?search_query=tara+brach+meditation+guided' },
+      { name: 'Sam Harris', platform: 'youtube', searchUrl: 'https://www.youtube.com/results?search_query=sam+harris+mindfulness+meditation' },
+      { name: 'Jack Kornfield', platform: 'youtube', searchUrl: 'https://www.youtube.com/results?search_query=jack+kornfield+guided+meditation' },
+      { name: '陈寿文', platform: 'bilibili', searchUrl: 'https://search.bilibili.com/all?keyword=%E9%99%88%E5%AF%BF%E6%96%87%E6%AD%A3%E5%BF%B5' },
+      { name: '央金拉姆', platform: 'bilibili', searchUrl: 'https://search.bilibili.com/all?keyword=%E5%A4%AE%E9%87%91%E6%8B%89%E5%A7%86%E5%86%A5%E6%83%B3' },
+    ];
+
+    // 生成每日正念推荐：3 个老师各 1 小时，轮换不同组合
+    function getTodayMindfulRecommendations() {
+      const dayOfYear = Math.floor((Date.now() - new Date(new Date().getFullYear(), 0, 0)) / 86400000);
+      const recommendations = [];
+      // 每天选 3 个老师，按天轮换
+      for (let i = 0; i < 3; i++) {
+        const idx = (dayOfYear * 3 + i) % MINDFUL_TEACHERS.length;
+        const teacher = MINDFUL_TEACHERS[idx];
+        recommendations.push({
+          ...teacher,
+          duration: 60,
+          topic: getMindfulTopic(idx, dayOfYear),
+        });
+      }
+      return recommendations;
+    }
+
+    function getMindfulTopic(teacherIdx, dayOfYear) {
+      const topics = [
+        '身体扫描', '呼吸禅修', '情绪觉察', '慈心禅', '行走禅',
+        '睡前放松', '焦虑缓解', '专注力训练', '自我慈悲', '正念进食',
+        '当下觉察', '念头观察', '声音禅修', '疼痛缓解', '整体复盘',
+      ];
+      return topics[(teacherIdx + dayOfYear) % topics.length];
+    }
 
     const QUOTES = [
       '严格执行，不拖延。今天的自律，是明天的自由。',
@@ -654,23 +691,22 @@
         });
       }
 
-      // 正念
-      const mindful = MINDFUL_PLAN[monthDay];
-      if (mindful) {
-        tasks.push({
-          id: 'mn-' + getTodayKey(),
-          title: '正念：' + mindful.teacher + ' · ' + mindful.topic,
-          desc: '今日 3 小时正念轮换（' + formatTime(mindful.duration) + '），可在后台播放',
-          time: '任意时段',
-          category: 'mindful',
-          tag: '正念',
-          score: 15,
-          duration: mindful.duration,
-          focusDone: 0,
-          quitCount: 0,
-          done: false,
-        });
-      }
+      // 正念：3 个老师各 1 小时，每天轮换
+      const mindfulRecs = getTodayMindfulRecommendations();
+      const mindfulNames = mindfulRecs.map(r => r.name).join(' / ');
+      tasks.push({
+        id: 'mn-' + getTodayKey(),
+        title: '正念：' + mindfulNames,
+        desc: '今日 3 位老师轮换，各 1 小时，点击「正念」页查看链接',
+        time: '任意时段',
+        category: 'mindful',
+        tag: '正念',
+        score: 15,
+        duration: 180,
+        focusDone: 0,
+        quitCount: 0,
+        done: false,
+      });
 
       return tasks;
     }
@@ -938,6 +974,7 @@
     }
 
     function stopFocus() {
+      restoreQuitModal();
       document.getElementById('quitModal').classList.add('active');
     }
 
@@ -986,6 +1023,113 @@
       document.getElementById('cancelQuit').onclick = cancelQuitFocus;
     }
 
+    // ========== 正念页面渲染 ==========
+    function renderMindfulPage() {
+      const container = document.getElementById('mindfulList');
+      const recs = getTodayMindfulRecommendations();
+      const platformName = (p) => p === 'bilibili' ? 'B站' : 'YouTube';
+      
+      container.innerHTML = recs.map((rec, i) => `
+        <div style="padding:16px 0;border-bottom:1px solid var(--border);">
+          <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:8px;">
+            <div>
+              <strong style="font-size:15px;color:var(--mindful);">${i+1}. ${rec.name}</strong>
+              <span style="font-size:12px;color:var(--text-secondary);margin-left:6px;">${platformName(rec.platform)}</span>
+            </div>
+            <span style="font-size:12px;background:#f3e5f5;color:#6a4c93;padding:3px 8px;border-radius:10px;">${rec.topic}</span>
+          </div>
+          <div style="font-size:13px;color:var(--text-secondary);margin-bottom:10px;">
+            推荐 1 小时 · ${rec.topic}主题
+          </div>
+          <a href="${rec.searchUrl}" target="_blank" rel="noopener" 
+             style="display:inline-block;background:var(--mindful);color:white;padding:8px 16px;border-radius:8px;font-size:13px;text-decoration:none;font-weight:600;">
+            ▶ 在${platformName(rec.platform)}观看
+          </a>
+        </div>
+      `).join('');
+      
+      // 添加说明
+      container.innerHTML += `
+        <div style="margin-top:16px;padding:12px;background:#f3e5f5;border-radius:10px;font-size:12px;color:#6a4c93;line-height:1.6;">
+          💡 每天推荐 3 位不同的主流正念老师，各 1 小时，共 3 小时。<br>
+          点击链接会在新窗口打开搜索结果，选择你喜欢的视频观看即可。<br>
+          老师每天轮换，两周内可接触到 14 位不同老师。
+        </div>
+      `;
+    }
+
+    // ========== 皮肤系统 ==========
+    const THEMES = [
+      { id: 'blue', name: '海洋蓝', primary: '#4a90e2', dark: '#2c6fb8', bg: '#f5f9ff', accent: '#a8d5ff' },
+      { id: 'green', name: '森林绿', primary: '#2e7d32', dark: '#1b5e20', bg: '#f1f8f2', accent: '#a5d6a7' },
+      { id: 'purple', name: '薰衣草', primary: '#7e57c2', dark: '#5e35b1', bg: '#f5f0fb', accent: '#d1c4e9' },
+      { id: 'orange', name: '日落橙', primary: '#fb8c00', dark: '#ef6c00', bg: '#fff8f0', accent: '#ffcc80' },
+      { id: 'pink', name: '樱花粉', primary: '#ec407a', dark: '#c2185b', bg: '#fdf0f5', accent: '#f8bbd0' },
+      { id: 'teal', name: '碧波青', primary: '#00897b', dark: '#00695c', bg: '#f0fafa', accent: '#80cbc4' },
+      { id: 'indigo', name: '靛蓝夜', primary: '#3f51b5', dark: '#283593', bg: '#f5f6ff', accent: '#9fa8da' },
+      { id: 'brown', name: '大地棕', primary: '#795548', dark: '#5d4037', bg: '#faf6f3', accent: '#bcaaa4' },
+      { id: 'cyan', name: '天空青', primary: '#0288d1', dark: '#01579b', bg: '#f0f9ff', accent: '#81d4fa' },
+      { id: 'grey', name: '极简灰', primary: '#546e7a', dark: '#37474f', bg: '#f5f7f8', accent: '#b0bec5' },
+    ];
+
+    function applyTheme(themeId) {
+      const theme = THEMES.find(t => t.id === themeId) || THEMES[0];
+      const root = document.documentElement;
+      root.style.setProperty('--primary', theme.primary);
+      root.style.setProperty('--primary-dark', theme.dark);
+      root.style.setProperty('--bg', theme.bg);
+      root.style.setProperty('--accent', theme.accent);
+      
+      // 更新 app-bar 渐变
+      const appBar = document.querySelector('.app-bar');
+      if (appBar) {
+        appBar.style.background = `linear-gradient(135deg, ${theme.primary} 0%, ${theme.dark} 100%)`;
+      }
+      
+      // 更新 theme-color
+      document.querySelector('meta[name="theme-color"]').setAttribute('content', theme.primary);
+      
+      // 保存选择
+      localStorage.setItem('xuyun-theme', themeId);
+    }
+
+    function getDailyTheme() {
+      // 每天自动轮换一个主题
+      const dayOfYear = Math.floor((Date.now() - new Date(new Date().getFullYear(), 0, 0)) / 86400000);
+      return THEMES[dayOfYear % THEMES.length].id;
+    }
+
+    function renderThemePage() {
+      const container = document.getElementById('themeGrid');
+      const currentTheme = localStorage.getItem('xuyun-theme') || getDailyTheme();
+      
+      container.innerHTML = `
+        <div style="margin-bottom:12px;padding:10px;background:${THEMES.find(t=>t.id===getDailyTheme()).accent}33;border-radius:8px;font-size:12px;color:var(--text-secondary);">
+          📅 今日自动推荐：<strong>${THEMES.find(t=>t.id===getDailyTheme()).name}</strong>
+        </div>
+        <div style="display:grid;grid-template-columns:repeat(2,1fr);gap:10px;">
+          ${THEMES.map(t => `
+            <div onclick="applyTheme('${t.id}');renderThemePage();" 
+                 style="padding:14px;border-radius:10px;cursor:pointer;border:2px solid ${currentTheme===t.id?t.primary:'transparent'};background:${t.bg};">
+              <div style="display:flex;gap:6px;margin-bottom:8px;">
+                <div style="width:20px;height:20px;border-radius:50%;background:${t.primary};"></div>
+                <div style="width:20px;height:20px;border-radius:50%;background:${t.dark};"></div>
+                <div style="width:20px;height:20px;border-radius:50%;background:${t.accent};"></div>
+              </div>
+              <div style="font-size:13px;font-weight:600;color:${t.dark};">${t.name}</div>
+              ${currentTheme===t.id ? '<div style="font-size:11px;color:'+t.primary+';margin-top:2px;">✓ 当前使用</div>' : ''}
+            </div>
+          `).join('')}
+        </div>
+        <div style="margin-top:12px;">
+          <button onclick="applyTheme(getDailyTheme());renderThemePage();" 
+                  style="width:100%;padding:10px;background:var(--primary);color:white;border:none;border-radius:8px;font-size:13px;font-weight:600;cursor:pointer;">
+            🔄 恢复今日自动推荐
+          </button>
+        </div>
+      `;
+    }
+
     // ========== 页面切换 ==========
     function switchPage(pageName) {
       document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
@@ -994,6 +1138,8 @@
       document.querySelectorAll(`[data-page="${pageName}"]`).forEach(b => b.classList.add('active'));
       
       if (pageName === 'study') renderStudyPage();
+      if (pageName === 'mindful') renderMindfulPage();
+      if (pageName === 'theme') renderThemePage();
       if (pageName === 'stats') renderStats();
     }
 
@@ -1007,6 +1153,10 @@
     // ========== 初始化 ==========
     document.addEventListener('DOMContentLoaded', () => {
       loadState();
+      
+      // 应用主题（每天自动轮换，或用户手动选择）
+      const savedTheme = localStorage.getItem('xuyun-theme');
+      applyTheme(savedTheme || getDailyTheme());
       
       // 恢复未完成的专注
       if (state.focus) {
