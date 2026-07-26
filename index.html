@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-  <meta name="theme-color" content="#2e7d32">
+  <meta name="theme-color" content="#4a90e2">
   <meta name="apple-mobile-web-app-capable" content="yes">
   <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
   <title>徐云工作台</title>
@@ -11,17 +11,19 @@
   <link rel="apple-touch-icon" href="icon.png">
   <style>
     :root {
-      --primary: #2e7d32;
-      --primary-light: #4caf50;
-      --primary-dark: #1b5e20;
+      --primary: #4a90e2;
+      --primary-light: #7eb8f5;
+      --primary-dark: #2c6fb8;
+      --accent: #a8d5ff;
       --danger: #e53935;
       --warning: #fb8c00;
-      --bg: #f5f5f5;
+      --bg: #f5f9ff;
       --card: #ffffff;
-      --text: #212121;
-      --text-secondary: #757575;
-      --border: #e0e0e0;
+      --text: #1f2937;
+      --text-secondary: #6b7280;
+      --border: #e3eef9;
       --success: #43a047;
+      --mindful: #8b7ab8;
     }
     * { margin: 0; padding: 0; box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
     body {
@@ -29,7 +31,7 @@
       background: var(--bg);
       color: var(--text);
       line-height: 1.5;
-      padding-bottom: 100px;
+      padding-bottom: 120px;
     }
     .app-bar {
       background: linear-gradient(135deg, var(--primary) 0%, var(--primary-dark) 100%);
@@ -84,9 +86,9 @@
       flex-shrink: 0;
     }
     .progress-ring circle { fill: none; stroke-width: 8; }
-    .progress-ring .bg { stroke: #e8f5e9; }
+    .progress-ring .bg { stroke: #e3eef9; }
     .progress-ring .fg { stroke: var(--primary); stroke-linecap: round; transition: stroke-dashoffset 0.5s; }
-    .progress-info h3 { font-size: 16px; margin-bottom: 4px; }
+    .progress-info h3 { font-size: 16px; margin-bottom: 4px; color: var(--primary-dark); }
     .progress-info p { font-size: 13px; color: var(--text-secondary); }
     .score { font-size: 24px; font-weight: 800; color: var(--primary); }
     .nav-menu {
@@ -136,10 +138,13 @@
     }
     .task-item:last-child { margin-bottom: 0; }
     .task-item.health { border-left-color: #e91e63; }
-    .task-item.study { border-left-color: #2196f3; }
+    .task-item.study { border-left-color: var(--primary); }
     .task-item.sport { border-left-color: #ff9800; }
     .task-item.routine { border-left-color: #9c27b0; }
-    .task-item.done { background: #e8f5e9; opacity: 0.85; }
+    .task-item.kaobian { border-left-color: #5e35b1; }
+    .task-item.mindful { border-left-color: var(--mindful); }
+    .task-item.practice { border-left-color: #00897b; }
+    .task-item.done { background: #eaf3fc; opacity: 0.85; }
     .task-item.done .task-title { text-decoration: line-through; color: var(--text-secondary); }
     .task-checkbox {
       width: 24px;
@@ -184,9 +189,12 @@
       margin-right: 4px;
     }
     .tag-health { background: #fce4ec; color: #c2185b; }
-    .tag-study { background: #e3f2fd; color: #1565c0; }
+    .tag-study { background: #e3f2fd; color: var(--primary-dark); }
     .tag-sport { background: #fff3e0; color: #ef6c00; }
     .tag-routine { background: #f3e5f5; color: #7b1fa2; }
+    .tag-kaobian { background: #ede7f6; color: #5e35b1; }
+    .tag-mindful { background: #f3e5f5; color: #6a4c93; }
+    .tag-practice { background: #e0f2f1; color: #00695c; }
     .card {
       background: var(--card);
       border-radius: 16px;
@@ -325,13 +333,13 @@
     .bottom-nav button.active { color: var(--primary); }
     .bottom-nav button .icon { font-size: 22px; }
     .quote-box {
-      background: linear-gradient(135deg, #fff8e1 0%, #ffecb3 100%);
+      background: linear-gradient(135deg, #eaf3fc 0%, #d6e8f9 100%);
       border-radius: 12px;
       padding: 14px;
       font-size: 13px;
-      color: #5d4037;
+      color: var(--primary-dark);
       margin-bottom: 12px;
-      border-left: 4px solid var(--warning);
+      border-left: 4px solid var(--primary);
     }
     .discipline-alert {
       background: #ffebee;
@@ -406,7 +414,7 @@
       <div class="section-title">🎯 专注学习</div>
       <div class="card" id="studyCard">
         <p style="font-size:14px;color:var(--text-secondary);margin-bottom:12px;">
-          固定学习时长：AI 学习 3 小时 + 考编学习 4 小时，必须计时完成。
+          学习任务累计制：AI 学习 3h + 考编 4h + 正念 3h。随时开始随时暂停，累计达标即完成。
         </p>
         <div id="studyTasks">
           <!-- 学习任务由 JS 生成 -->
@@ -470,13 +478,98 @@
       { id: 'm-1', title: '三七粉 + 姜枣茶', desc: '温水冲服，空腹饮用', time: '07:00', category: 'health', tag: '养生', score: 5 },
       { id: 's-1', title: '早运动 1 小时', desc: '有氧/拉伸/八段锦均可', time: '07:30', category: 'sport', tag: '运动', score: 10, duration: 60 },
       { id: 'r-1', title: '第一次水丸', desc: '按时服用', time: '08:30', category: 'routine', tag: '常规', score: 5 },
-      { id: 'st-1', title: 'AI 学习', desc: '深度学习/项目/论文，必须专注计时', time: '09:00', category: 'study', tag: '学习', score: 20, duration: 180 },
+      { id: 'k-1', title: '玫七藏茶（上午 500ml）', desc: '冲泡饮用，上午完成', time: '10:00', category: 'health', tag: '养生', score: 5 },
       { id: 'r-2', title: '第二次水丸', desc: '按时服用', time: '12:00', category: 'routine', tag: '常规', score: 5 },
-      { id: 'st-2', title: '考编学习', desc: '刷题/听课/背书，必须专注计时', time: '14:00', category: 'study', tag: '学习', score: 25, duration: 240 },
+      { id: 'k-2', title: '玫七藏茶（下午 500ml）', desc: '冲泡饮用，下午完成', time: '15:00', category: 'health', tag: '养生', score: 5 },
       { id: 'r-3', title: '第三次水丸', desc: '按时服用', time: '18:00', category: 'routine', tag: '常规', score: 5 },
       { id: 's-2', title: '晚运动 1 小时', desc: '散步/瑜伽/力量训练', time: '18:30', category: 'sport', tag: '运动', score: 10, duration: 60 },
       { id: 'h-1', title: '热敷肚子 + 泡脚', desc: '热敷 20 分钟，泡脚 20 分钟', time: '20:30', category: 'health', tag: '养生', score: 10 },
+      { id: 'w-1', title: '练字 30 分钟', desc: '字帖临摹或自由书写，静心', time: '21:30', category: 'practice', tag: '练字', score: 10, duration: 30 },
     ];
+
+    // AI 学习：累计 3 小时，不固定时段
+    const STUDY_TASKS = [
+      {
+        id: 'st-ai',
+        title: 'AI 学习（累计 3 小时）',
+        desc: '深度学习/项目/论文/代码，今日累计满 3 小时即完成',
+        category: 'study',
+        tag: 'AI学习',
+        score: 25,
+        targetMinutes: 180,
+      },
+    ];
+
+    // 考编 31 天复习计划
+    const KAOBIAN_PLAN = {
+      // 8 月开始（用户当前约 7/26，8 月 1 日开始走计划）
+      '08-01': { chapter: '教材总览 + 学科框架', detail: '综应B 整体章节结构梳理，建立知识树' },
+      '08-02': { chapter: '师德规范与法律法规', detail: '师德核心 + 教师法 + 教育法基础条款' },
+      '08-03': { chapter: '师德规范与法律法规', detail: '未成年人保护法 + 义务教育法 + 法规案例' },
+      '08-04': { chapter: '教育学基础（上）', detail: '教育的本质 + 教育与社会发展' },
+      '08-05': { chapter: '教育学基础（中）', detail: '教育与人的发展 + 教育目的' },
+      '08-06': { chapter: '教育学基础（下）', detail: '教育制度 + 教育研究方法' },
+      '08-07': { chapter: '教育学基础 复盘', detail: '章节框架回顾 + 错题总结' },
+      '08-08': { chapter: '教育史（古代→近现代）', detail: '中国古代教育史 + 近代教育演变' },
+      '08-09': { chapter: '外国教育史', detail: '古希腊罗马 + 中世纪 + 文艺复兴' },
+      '08-10': { chapter: '外国教育史 + 复盘', detail: '近现代外国教育 + 各国比较' },
+      '08-11': { chapter: '教学原理（上）', detail: '教学本质 + 教学目标（布鲁姆/加涅/三维）' },
+      '08-12': { chapter: '教学原理（中）', detail: '教学原则 + 教学方法' },
+      '08-13': { chapter: '教学原理（下）', detail: '教学组织形式 + 教学过程基本规律' },
+      '08-14': { chapter: '教学原理 复盘', detail: '章节综合 + 典型例题讲解' },
+      '08-15': { chapter: '教学评价与测量', detail: '评价类型 + 信效度 + 测量方法' },
+      '08-16': { chapter: '班主任与班级管理（上）', detail: '班级建设 + 学生管理' },
+      '08-17': { chapter: '班主任与班级管理（下）', detail: '家校沟通 + 突发事件处理' },
+      '08-18': { chapter: '教学心理（学习理论）', detail: '行为主义 + 认知主义 + 人本主义' },
+      '08-19': { chapter: '教学心理（学习理论）', detail: '建构主义 + 信息加工理论' },
+      '08-20': { chapter: '学习心理（动机）', detail: '学习动机理论 + 培养策略' },
+      '08-21': { chapter: '学习心理（迁移与策略）', detail: '学习迁移 + 学习策略' },
+      '08-22': { chapter: '学习心理 复盘', detail: '重点理论对比 + 易混淆点' },
+      '08-23': { chapter: '个别差异与因材施教', detail: '智力差异 + 人格差异 + 特殊儿童教育' },
+      '08-24': { chapter: '心理健康教育', detail: '心理健康标准 + 常见心理问题 + 辅导方法' },
+      '08-25': { chapter: '教学心理 复盘', detail: '全章节串联 + 真题演练' },
+      '08-26': { chapter: '教学设计（导入与目标）', detail: '教学设计理论 + 目标撰写' },
+      '08-27': { chapter: '教学设计（过程与方法）', detail: '导入 + 讲授 + 提问 + 板书设计' },
+      '08-28': { chapter: '教学设计（评价与作业）', detail: '课堂练习 + 作业设计 + 教学反思' },
+      '08-29': { chapter: '真题实战 1', detail: '近 3 年真题第 1 套 + 详细纠错' },
+      '08-30': { chapter: '真题实战 2', detail: '近 3 年真题第 2 套 + 时长训练' },
+      '08-31': { chapter: '总复盘', detail: '薄弱点专项突破 + 8 月知识地图总结' },
+    };
+
+    // 正念推荐 31 天轮换（每日 3 小时）
+    const MINDFUL_PLAN = {
+      '08-01': { teacher: '胡婷婷', topic: '身体扫描入门', duration: 180 },
+      '08-02': { teacher: '一行禅师', topic: '呼吸禅修', duration: 180 },
+      '08-03': { teacher: '加措仁波切', topic: '当下即是（藏传正念）', duration: 180 },
+      '08-04': { teacher: 'Breathworks', topic: '3 分钟呼吸空间', duration: 180 },
+      '08-05': { teacher: 'Headspace 课程', topic: '焦虑缓解', duration: 180 },
+      '08-06': { teacher: '胡婷婷', topic: '情绪与正念', duration: 180 },
+      '08-07': { teacher: 'Jon Kabat-Zinn', topic: '正念减压 MBSR 第一课', duration: 180 },
+      '08-08': { teacher: '一念静心', topic: '静坐入门', duration: 180 },
+      '08-09': { teacher: '徐梵澄', topic: '东方正念经典解读', duration: 180 },
+      '08-10': { teacher: 'Mindful Schools', topic: '慈心禅', duration: 180 },
+      '08-11': { teacher: '加措仁波切', topic: '慈悲心观修', duration: 180 },
+      '08-12': { teacher: '胡婷婷', topic: '行走禅', duration: 180 },
+      '08-13': { teacher: '一行禅师', topic: '正念呼吸四步训练', duration: 180 },
+      '08-14': { teacher: 'Headspace', topic: '专注力训练', duration: 180 },
+      '08-15': { teacher: 'Breathworks', topic: '情绪急救', duration: 180 },
+      '08-16': { teacher: 'Jon Kabat-Zinn', topic: 'MBSR 第二课 - 觉察身体', duration: 180 },
+      '08-17': { teacher: '一念静心', topic: '睡前放松引导', duration: 180 },
+      '08-18': { teacher: 'Mindful Schools', topic: '正念倾听', duration: 180 },
+      '08-19': { teacher: '加措仁波切', topic: '无分别心观修', duration: 180 },
+      '08-20': { teacher: '胡婷婷', topic: '正念进食法', duration: 180 },
+      '08-21': { teacher: '一行禅师', topic: '正念的奇迹', duration: 180 },
+      '08-22': { teacher: 'Headspace', topic: '人际沟通正念', duration: 180 },
+      '08-23': { teacher: '徐梵澄', topic: '禅与正念', duration: 180 },
+      '08-24': { teacher: 'Breathworks', topic: '自我慈悲练习', duration: 180 },
+      '08-25': { teacher: 'Jon Kabat-Zinn', topic: 'MBSR 第三课 - 正念运动', duration: 180 },
+      '08-26': { teacher: '一念静心', topic: '晨间正念启动', duration: 180 },
+      '08-27': { teacher: 'Mindful Schools', topic: '应对不确定感', duration: 180 },
+      '08-28': { teacher: '加措仁波切', topic: '心安即是归处', duration: 180 },
+      '08-29': { teacher: '胡婷婷', topic: '整体复盘冥想', duration: 180 },
+      '08-30': { teacher: '一行禅师', topic: '一日禅回顾', duration: 180 },
+      '08-31': { teacher: '综合轮播', topic: '本月精选合集（自由选择）', duration: 180 },
+    };
 
     const QUOTES = [
       '严格执行，不拖延。今天的自律，是明天的自由。',
@@ -491,7 +584,7 @@
       tasks: [],
       memo: '',
       history: {},
-      focus: null, // { taskId, startTime, elapsed }
+      focus: null,
     };
 
     let focusInterval = null;
@@ -499,24 +592,98 @@
     // ========== 工具函数 ==========
     function getTodayKey() {
       const now = new Date();
-      // 以凌晨 4 点为界算一天
       if (now.getHours() < 4) {
         now.setDate(now.getDate() - 1);
       }
       return now.toISOString().split('T')[0];
     }
 
+    function getMonthDay() {
+      const now = new Date();
+      return String(now.getMonth() + 1).padStart(2, '0') + '-' + String(now.getDate()).padStart(2, '0');
+    }
+
+    function getTodayDynamicTasks() {
+      const monthDay = getMonthDay();
+      const tasks = [...TASK_TEMPLATE];
+      
+      // AI 学习（每日累计 3 小时）
+      tasks.push({
+        id: 'st-ai-' + getTodayKey(),
+        title: 'AI 学习',
+        desc: '深度学习/项目/论文/代码 · 今日累计满 3 小时',
+        time: '任意时段',
+        category: 'study',
+        tag: 'AI学习',
+        score: 25,
+        duration: 180,
+        focusDone: 0,
+        quitCount: 0,
+        done: false,
+      });
+
+      // 考编学习
+      const kaobian = KAOBIAN_PLAN[monthDay];
+      if (kaobian) {
+        tasks.push({
+          id: 'st-kaobian-' + getTodayKey(),
+          title: '考编学习 · ' + kaobian.chapter,
+          desc: kaobian.detail + ' · 累计满 4 小时',
+          time: '任意时段',
+          category: 'kaobian',
+          tag: '考编',
+          score: 30,
+          duration: 240,
+          focusDone: 0,
+          quitCount: 0,
+          done: false,
+        });
+      } else {
+        tasks.push({
+          id: 'st-kaobian-' + getTodayKey(),
+          title: '考编学习',
+          desc: '今日无安排章节，可自由复习 · 累计 4 小时',
+          time: '任意时段',
+          category: 'kaobian',
+          tag: '考编',
+          score: 30,
+          duration: 240,
+          focusDone: 0,
+          quitCount: 0,
+          done: false,
+        });
+      }
+
+      // 正念
+      const mindful = MINDFUL_PLAN[monthDay];
+      if (mindful) {
+        tasks.push({
+          id: 'mn-' + getTodayKey(),
+          title: '正念：' + mindful.teacher + ' · ' + mindful.topic,
+          desc: '今日 3 小时正念轮换（' + formatTime(mindful.duration) + '），可在后台播放',
+          time: '任意时段',
+          category: 'mindful',
+          tag: '正念',
+          score: 15,
+          duration: mindful.duration,
+          focusDone: 0,
+          quitCount: 0,
+          done: false,
+        });
+      }
+
+      return tasks;
+    }
+
     function loadState() {
       const saved = localStorage.getItem('xuyun-workbench');
       if (saved) {
         const parsed = JSON.parse(saved);
-        // 如果保存的不是今天，则归档到历史并重置
         if (parsed.date && parsed.date !== getTodayKey()) {
           archiveDay(parsed.date, parsed.tasks);
           state = createFreshState();
         } else {
           state = { ...createFreshState(), ...parsed };
-          // 确保任务列表完整
           state.tasks = mergeTasks(parsed.tasks || []);
         }
       } else {
@@ -527,7 +694,7 @@
     function createFreshState() {
       return {
         date: getTodayKey(),
-        tasks: TASK_TEMPLATE.map(t => ({ ...t, done: false, focusDone: 0, quitCount: 0 })),
+        tasks: getTodayDynamicTasks().map(t => ({ ...t, done: false, focusDone: 0, quitCount: 0 })),
         memo: '',
         history: {},
         focus: null,
@@ -535,9 +702,9 @@
     }
 
     function mergeTasks(savedTasks) {
-      return TASK_TEMPLATE.map(template => {
+      return getTodayDynamicTasks().map(template => {
         const saved = savedTasks.find(t => t.id === template.id);
-        return saved ? { ...template, ...saved } : { ...template, done: false, focusDone: 0, quitCount: 0 };
+        return saved ? { ...template, ...saved, focusDone: saved.focusDone || 0, quitCount: saved.quitCount || 0 } : { ...template, done: false, focusDone: 0, quitCount: 0 };
       });
     }
 
@@ -613,9 +780,22 @@
       const container = document.getElementById('timeline');
       container.innerHTML = '';
       
-      state.tasks.forEach(task => {
+      // 排序：固定时间按时段，任意时段的学习类靠后
+      const sorted = [...state.tasks].sort((a, b) => {
+        const aFlex = !a.time.includes(':');
+        const bFlex = !b.time.includes(':');
+        if (aFlex !== bFlex) return aFlex ? 1 : -1;
+        return a.time.localeCompare(b.time);
+      });
+      
+      sorted.forEach(task => {
         const item = document.createElement('div');
         item.className = `task-item ${task.category} ${task.done ? 'done' : ''}`;
+        const durationLine = task.duration ? `<div class="task-desc">🎯 ${formatTime(task.duration)} | ✅ ${formatTime(task.focusDone || 0)}</div>` : '';
+        const isStudy = ['study', 'kaobian', 'mindful'].includes(task.category);
+        const startBtn = isStudy && !task.done ? `<button class="btn-sm btn-primary-sm" onclick="startFocus('${task.id}')">开始专注</button>` : '';
+        const resetBtn = isStudy && task.done ? `<button class="btn-sm btn-warning-sm" onclick="resetTask('${task.id}')">重置</button>` : '';
+        
         item.innerHTML = `
           <div class="task-checkbox" onclick="toggleTask('${task.id}')">
             ${task.done ? '✓' : ''}
@@ -624,11 +804,8 @@
             <div class="task-time">${task.time} · <span class="tag tag-${task.category}">${task.tag}</span></div>
             <div class="task-title">${task.title}</div>
             <div class="task-desc">${task.desc}</div>
-            ${task.duration ? `<div class="task-desc">目标时长：${formatTime(task.duration)} ${task.focusDone > 0 ? `| 已完成 ${formatTime(task.focusDone)}` : ''}</div>` : ''}
-            <div class="task-actions">
-              ${task.category === 'study' && !task.done ? `<button class="btn-sm btn-primary-sm" onclick="startFocus('${task.id}')">开始专注</button>` : ''}
-              ${task.done && task.category === 'study' ? `<button class="btn-sm btn-warning-sm" onclick="resetTask('${task.id}')">重新计时</button>` : ''}
-            </div>
+            ${durationLine}
+            ${(startBtn || resetBtn) ? `<div class="task-actions">${startBtn}${resetBtn}</div>` : ''}
           </div>
         `;
         container.appendChild(item);
@@ -639,24 +816,32 @@
       const container = document.getElementById('studyTasks');
       container.innerHTML = '';
       
-      const studyTasks = state.tasks.filter(t => t.category === 'study');
+      const studyTasks = state.tasks.filter(t => ['study', 'kaobian', 'mindful'].includes(t.category));
+      
+      if (studyTasks.length === 0) {
+        container.innerHTML = '<p style="color:var(--text-secondary);text-align:center;padding:20px;">今日无学习任务</p>';
+        return;
+      }
+      
       studyTasks.forEach(task => {
+        const pct = Math.min(100, ((task.focusDone || 0) / task.duration) * 100);
+        const remaining = Math.max(0, task.duration - (task.focusDone || 0));
         const div = document.createElement('div');
         div.style.cssText = 'padding:14px 0; border-bottom:1px solid var(--border);';
         div.innerHTML = `
           <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:6px;">
-            <strong>${task.title}</strong>
-            <span style="font-size:13px;color:${task.done ? 'var(--success)' : 'var(--text-secondary)'}">
-              ${task.done ? '✓ 已完成' : '进行中'}
+            <strong style="font-size:14px;">${task.title}</strong>
+            <span style="font-size:13px;color:${task.done ? 'var(--success)' : 'var(--primary)'}">
+              ${task.done ? '✓ 已完成' : '剩余 ' + formatTime(remaining)}
             </span>
           </div>
-          <div style="font-size:13px;color:var(--text-secondary);margin-bottom:10px;">
-            目标 ${formatTime(task.duration)} · 已专注 ${formatTime(task.focusDone)} · 中途退出 ${task.quitCount} 次
+          <div style="font-size:12px;color:var(--text-secondary);margin-bottom:10px;">
+            目标 ${formatTime(task.duration)} · 已专注 ${formatTime(task.focusDone || 0)} · 中途退出 ${task.quitCount || 0} 次
           </div>
-          <div style="background:#e8f5e9;height:8px;border-radius:4px;overflow:hidden;margin-bottom:10px;">
-            <div style="background:var(--primary);height:100%;width:${Math.min(100, (task.focusDone / task.duration) * 100)}%;"></div>
+          <div style="background:#eaf3fc;height:8px;border-radius:4px;overflow:hidden;margin-bottom:10px;">
+            <div style="background:var(--primary);height:100%;width:${pct}%;transition:width 0.3s;"></div>
           </div>
-          ${!task.done ? `<button class="btn-sm btn-primary-sm" onclick="startFocus('${task.id}')">开始专注计时</button>` : ''}
+          ${!task.done ? `<button class="btn-sm btn-primary-sm" onclick="startFocus('${task.id}')">开始/继续专注</button>` : ''}
         `;
         container.appendChild(div);
       });
@@ -701,8 +886,9 @@
       const task = state.tasks.find(t => t.id === id);
       if (!task) return;
       
-      // 学习任务必须通过专注计时完成
-      if (task.category === 'study' && !task.done && task.focusDone < task.duration) {
+      // 学习/考编/正念必须通过专注计时完成
+      const isStudy = ['study', 'kaobian', 'mindful'].includes(task.category);
+      if (isStudy && !task.done && (task.focusDone || 0) < task.duration) {
         showModal('学习任务需通过专注计时完成', '请点击「开始专注」并坚持到目标时长，系统会自动打勾。');
         return;
       }
