@@ -499,12 +499,18 @@
   <div class="focus-overlay" id="focusOverlay">
     <div class="focus-task" id="focusTaskName">正在专注</div>
     <div class="focus-timer" id="focusTimer">00:00:00</div>
-    <div class="focus-message">
+    <div class="focus-message" id="focusMessage">
       手机已锁定<br>
       专注期间禁止刷视频、聊天、玩游戏<br>
       坚持就是胜利
     </div>
-    <button class="focus-btn" id="stopFocusBtn">结束专注</button>
+    <div style="display:flex;gap:12px;margin-top:40px;">
+      <button class="focus-btn" id="pauseFocusBtn" style="background:#fff3e0;color:#ef6c00;">⏸ 暂停</button>
+      <button class="focus-btn" id="stopFocusBtn">⏹ 结束</button>
+    </div>
+    <div id="pauseHint" style="display:none;margin-top:16px;font-size:13px;opacity:0.8;color:#ffcc80;">
+      已暂停 · 点击「继续」恢复计时
+    </div>
   </div>
 
   <!-- 退出确认弹窗 -->
@@ -969,14 +975,15 @@
       if (!task) return;
       
       if (state.focus) {
-        showModal('已有进行中的专注', '请先结束当前专注任务。');
+        showModal('已有进行中的专注', '请先结束或暂停当前专注任务。');
         return;
       }
       
       state.focus = {
         taskId: id,
         startTime: Date.now(),
-        elapsed: task.focusDone * 60,
+        elapsed: (task.focusDone || 0) * 60,
+        paused: false,
       };
       saveState();
       openFocusOverlay();
@@ -987,8 +994,42 @@
       const task = state.tasks.find(t => t.id === state.focus.taskId);
       document.getElementById('focusTaskName').textContent = `正在专注：${task.title}`;
       overlay.classList.add('active');
+      document.getElementById('pauseHint').style.display = 'none';
+      document.getElementById('pauseFocusBtn').textContent = '⏸ 暂停';
+      document.getElementById('pauseFocusBtn').onclick = pauseFocus;
       
       focusInterval = setInterval(() => {
+        if (state.focus.paused) return;
+        const elapsed = Math.floor((Date.now() - state.focus.startTime) / 1000) + state.focus.elapsed;
+        document.getElementById('focusTimer').textContent = formatClock(elapsed);
+      }, 1000);
+    }
+
+    function pauseFocus() {
+      if (!state.focus) return;
+      if (!state.focus.paused) {
+        // 暂停：保存当前已计时的秒数
+        const elapsed = Math.floor((Date.now() - state.focus.startTime) / 1000) + state.focus.elapsed;
+        state.focus.elapsed = elapsed;
+        state.focus.paused = true;
+        clearInterval(focusInterval);
+        document.getElementById('pauseHint').style.display = 'block';
+        document.getElementById('pauseFocusBtn').textContent = '▶ 继续';
+        document.getElementById('pauseFocusBtn').onclick = resumeFocus;
+        saveState();
+      }
+    }
+
+    function resumeFocus() {
+      if (!state.focus) return;
+      state.focus.paused = false;
+      state.focus.startTime = Date.now();
+      document.getElementById('pauseHint').style.display = 'none';
+      document.getElementById('pauseFocusBtn').textContent = '⏸ 暂停';
+      document.getElementById('pauseFocusBtn').onclick = pauseFocus;
+      saveState();
+      focusInterval = setInterval(() => {
+        if (state.focus.paused) return;
         const elapsed = Math.floor((Date.now() - state.focus.startTime) / 1000) + state.focus.elapsed;
         document.getElementById('focusTimer').textContent = formatClock(elapsed);
       }, 1000);
@@ -1002,8 +1043,14 @@
     function confirmQuitFocus() {
       if (!state.focus) return;
       const task = state.tasks.find(t => t.id === state.focus.taskId);
-      const elapsed = Math.floor((Date.now() - state.focus.startTime) / 1000) + state.focus.elapsed;
-      const minutes = Math.floor(elapsed / 60);
+      // 计算总时长（考虑暂停状态）
+      let totalSeconds;
+      if (state.focus.paused) {
+        totalSeconds = state.focus.elapsed;
+      } else {
+        totalSeconds = Math.floor((Date.now() - state.focus.startTime) / 1000) + state.focus.elapsed;
+      }
+      const minutes = Math.floor(totalSeconds / 60);
       
       task.focusDone = minutes;
       task.quitCount += 1;
@@ -1281,6 +1328,13 @@
       // 恢复未完成的专注
       if (state.focus) {
         openFocusOverlay();
+        if (state.focus.paused) {
+          // 如果之前是暂停状态，显示暂停界面
+          document.getElementById('pauseHint').style.display = 'block';
+          document.getElementById('pauseFocusBtn').textContent = '▶ 继续';
+          document.getElementById('pauseFocusBtn').onclick = resumeFocus;
+          document.getElementById('focusTimer').textContent = formatClock(state.focus.elapsed);
+        }
       }
       
       // 每日名言
