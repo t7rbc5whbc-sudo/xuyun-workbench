@@ -272,7 +272,7 @@
       position: fixed;
       top: 0; left: 0; right: 0; bottom: 0;
       background: rgba(0,0,0,0.5);
-      z-index: 999;
+      z-index: 2000;
       display: none;
       align-items: center;
       justify-content: center;
@@ -521,6 +521,17 @@
       <div class="modal-btns">
         <button class="modal-btn modal-cancel" id="cancelQuit">继续坚持</button>
         <button class="modal-btn modal-confirm" id="confirmQuit">仍要退出</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- 提示弹窗（独立，不干扰退出逻辑） -->
+  <div class="modal" id="infoModal">
+    <div class="modal-content">
+      <div class="modal-title" id="infoModalTitle">提示</div>
+      <div class="modal-text" id="infoModalText"></div>
+      <div class="modal-btns">
+        <button class="modal-btn modal-confirm" id="infoModalOk" style="background:var(--primary);">知道了</button>
       </div>
     </div>
   </div>
@@ -1072,23 +1083,15 @@
     }
 
     function showModal(title, text) {
-      document.querySelector('#quitModal .modal-title').textContent = title;
-      document.querySelector('#quitModal .modal-text').textContent = text;
-      document.getElementById('quitModal').classList.add('active');
-      document.getElementById('confirmQuit').style.display = 'none';
-      document.getElementById('cancelQuit').textContent = '知道了';
-      document.getElementById('cancelQuit').onclick = () => {
-        document.getElementById('quitModal').classList.remove('active');
-        restoreQuitModal();
-      };
+      document.getElementById('infoModalTitle').textContent = title;
+      document.getElementById('infoModalText').textContent = text;
+      document.getElementById('infoModal').classList.add('active');
     }
 
     function restoreQuitModal() {
-      document.querySelector('#quitModal .modal-title').textContent = '确定要退出专注？';
-      document.querySelector('#quitModal .modal-text').textContent = '中途退出会被记录，并影响今日执行评分。请再坚持一下！';
+      // 确保 quitModal 的按钮始终可见
       document.getElementById('confirmQuit').style.display = 'inline-block';
       document.getElementById('cancelQuit').textContent = '继续坚持';
-      document.getElementById('cancelQuit').onclick = cancelQuitFocus;
     }
 
     // ========== 正念页面渲染 ==========
@@ -1349,6 +1352,9 @@
       document.getElementById('stopFocusBtn').addEventListener('click', stopFocus);
       document.getElementById('confirmQuit').addEventListener('click', confirmQuitFocus);
       document.getElementById('cancelQuit').addEventListener('click', cancelQuitFocus);
+      document.getElementById('infoModalOk').addEventListener('click', () => {
+        document.getElementById('infoModal').classList.remove('active');
+      });
       
       const memoEl = document.getElementById('memoText');
       memoEl.value = state.memo;
