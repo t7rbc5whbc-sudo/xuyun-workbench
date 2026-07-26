@@ -1266,6 +1266,16 @@
         </button>
         </div>
         <div style="margin-top:16px;border-top:1px solid var(--border);padding-top:16px;">
+          <div style="font-size:13px;font-weight:700;color:var(--text);margin-bottom:8px;">🔄 数据刷新</div>
+          <div style="font-size:11px;color:var(--text-secondary);margin-bottom:8px;">
+            如果日期/任务没有自动更新，点下面按钮强制刷新今日计划
+          </div>
+          <button onclick="localStorage.removeItem('xuyun-workbench');window.location.reload(true);" 
+                  style="width:100%;padding:10px;background:var(--danger);color:white;border:none;border-radius:8px;font-size:13px;font-weight:600;cursor:pointer;">
+            ⚠ 强制重置今日计划
+          </button>
+        </div>
+        <div style="margin-top:16px;border-top:1px solid var(--border);padding-top:16px;">
           <div style="font-size:13px;font-weight:700;color:var(--text);margin-bottom:8px;">🎨 主题配色</div>
           <div style="font-size:11px;color:var(--text-secondary);margin-bottom:6px;">📅 今日推荐：<strong>${THEMES.find(t=>t.id===getDailyTheme()).name}</strong></div>
           <div style="display:grid;grid-template-columns:repeat(2,1fr);gap:8px;">
@@ -1369,6 +1379,31 @@
       }
       
       refreshAll();
+      
+      // 每天自动刷新：当从后台恢复时，如果日期变了就重新加载页面
+      document.addEventListener('visibilitychange', () => {
+        if (document.visibilityState === 'visible') {
+          const saved = localStorage.getItem('xuyun-workbench');
+          if (saved) {
+            const parsed = JSON.parse(saved);
+            if (parsed.date && parsed.date !== getTodayKey()) {
+              // 日期变了，强制刷新页面以重置状态
+              window.location.reload(true);
+            }
+          }
+        }
+      });
+      
+      // 每分钟检查一次日期，跨天时自动刷新（适用于长时间挂在前台的情况）
+      setInterval(() => {
+        const saved = localStorage.getItem('xuyun-workbench');
+        if (saved) {
+          const parsed = JSON.parse(saved);
+          if (parsed.date && parsed.date !== getTodayKey()) {
+            window.location.reload(true);
+          }
+        }
+      }, 60000);
     });
 
     // Service Worker 注册
