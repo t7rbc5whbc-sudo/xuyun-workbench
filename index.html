@@ -7,8 +7,12 @@
   <meta name="apple-mobile-web-app-capable" content="yes">
   <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
   <title>徐云工作台</title>
-  <link rel="manifest" href="manifest.json">
-  <link rel="apple-touch-icon" href="icon.png">
+  <link rel="manifest" href="manifest.json?v=10">
+  <link rel="apple-touch-icon" href="icon.png?v=10">
+  <script>
+    // 版本号，每次更新加1，强制刷新
+    window.APP_VERSION = 10;
+  </script>
   <style>
     :root {
       --primary: #4a90e2;
@@ -381,6 +385,7 @@
     <div class="header-stats">
       <div class="stat-chip">📊 完成 <span id="doneCount">0</span>/<span id="totalCount">0</span></div>
       <div class="stat-chip">⭐ 得分 <span id="scoreDisplay">0</span></div>
+      <div class="stat-chip" id="versionChip" style="cursor:pointer;" onclick="forceUpdate()">v10</div>
     </div>
   </div>
 
@@ -1088,6 +1093,20 @@
       document.getElementById('infoModal').classList.add('active');
     }
 
+    function forceUpdate() {
+      // 清除 Service Worker 缓存并重新加载
+      if ('serviceWorker' in navigator) {
+        navigator.serviceWorker.getRegistrations().then(registrations => {
+          registrations.forEach(reg => reg.unregister());
+        });
+      }
+      caches.keys().then(keys => {
+        keys.forEach(key => caches.delete(key));
+      });
+      localStorage.removeItem('xuyun-workbench');
+      window.location.href = 'https://t7rbc5whbc-sudo.github.io/xuyun-workbench/?v=' + Date.now();
+    }
+
     function restoreQuitModal() {
       // 确保 quitModal 的按钮始终可见
       document.getElementById('confirmQuit').style.display = 'inline-block';
@@ -1235,6 +1254,14 @@
       const dailyBg = getDailyBackground();
       
       let html = `
+        <div style="margin-bottom:16px;padding:12px;background:var(--accent);border-radius:10px;font-size:13px;color:var(--primary-dark);">
+          <strong>📅 今天是 ${new Date().getMonth()+1}月${new Date().getDate()}日</strong><br>
+          <span style="font-size:12px;color:var(--text-secondary);">如果内容没更新，点下面「强制刷新最新版」</span>
+        </div>
+        <button onclick="forceUpdate()" 
+                style="width:100%;padding:12px;background:var(--primary);color:white;border:none;border-radius:10px;font-size:14px;font-weight:700;cursor:pointer;margin-bottom:16px;">
+          🔄 强制刷新最新版
+        </button>
         <div style="margin-bottom:16px;">
           <div style="font-size:13px;font-weight:700;color:var(--text);margin-bottom:8px;">🖼️ 背景图片</div>
           <div style="margin-bottom:8px;padding:8px;background:var(--accent);border-radius:8px;font-size:11px;color:var(--text-secondary);">
