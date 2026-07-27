@@ -1,0 +1,100 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>徐云工作台 - 加载器</title>
+  <style>
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    body {
+      font-family: -apple-system, sans-serif;
+      background: linear-gradient(135deg, #4a90e2, #7eb8f5);
+      min-height: 100vh;
+      display: flex; align-items: center; justify-content: center;
+      padding: 20px;
+    }
+    .box {
+      background: white; border-radius: 20px; padding: 30px;
+      max-width: 360px; width: 100%; text-align: center;
+      box-shadow: 0 10px 40px rgba(0,0,0,0.2);
+    }
+    .logo { font-size: 48px; color: #4a90e2; margin-bottom: 16px; font-weight: bold; }
+    h1 { font-size: 22px; color: #1f2937; margin-bottom: 6px; }
+    .sub { color: #6b7280; font-size: 14px; margin-bottom: 20px; }
+    .btn {
+      display: inline-block; padding: 14px 32px;
+      background: #4a90e2; color: white; border-radius: 14px;
+      font-size: 16px; font-weight: 600; cursor: pointer;
+      border: none; margin: 8px;
+    }
+    .btn:active { transform: scale(0.95); }
+    .btn.green { background: #43a047; }
+    .msg { margin-top: 16px; padding: 12px; border-radius: 10px;
+      font-size: 13px; background: #f5f9ff; color: #2c6fb8; min-height: 40px; }
+    .msg.err { background: #ffebee; color: #c62828; }
+    .spinner { display: inline-block; width: 14px; height: 14px;
+      border: 2px solid #fff; border-top-color: transparent;
+      border-radius: 50%; animation: spin .8s linear infinite; margin-right: 6px; vertical-align: middle; }
+    @keyframes spin { to { transform: rotate(360deg); } }
+  </style>
+</head>
+<body>
+  <div class="box">
+    <div class="logo">徐</div>
+    <h1>徐云工作台</h1>
+    <div class="sub">v10 · 每日自律助手</div>
+
+    <button class="btn" onclick="loadFromCDN()">加载工作台</button>
+    <button class="btn green" onclick="saveLocal()" style="display:none" id="saveBtn">下载保存到手机</button>
+    <div class="msg" id="msg">点击「加载工作台」开始</div>
+  </div>
+
+  <script>
+    // 从 jsdelivr 国内镜像加载（中国大陆可访问）
+    const CDN_URLS = [
+      'https://gcore.jsdelivr.net/gh/t7rbc5whbc-sudo/xuyun-workbench@main/index.html',
+      'https://testingcf.jsdelivr.net/gh/t7rbc5whbc-sudo/xuyun-workbench@main/index.html',
+      'https://cdn.jsdelivr.net/gh/t7rbc5whbc-sudo/xuyun-workbench@main/index.html'
+    ];
+    let htmlData = null;
+
+    function showMsg(text, isErr) {
+      document.getElementById('msg').textContent = text;
+      document.getElementById('msg').className = 'msg' + (isErr ? ' err' : '');
+    }
+
+    async function loadFromCDN() {
+      showMsg('正在加载...');
+      for (const url of CDN_URLS) {
+        try {
+          const res = await fetch(url, { cache: 'no-store' });
+          if (res.ok) {
+            const text = await res.text();
+            if (text.includes('徐云工作台') && text.length > 5000) {
+              htmlData = text;
+              const blob = new Blob([text], { type: 'text/html' });
+              const blobUrl = URL.createObjectURL(blob);
+              showMsg('加载成功！正在打开...');
+              document.getElementById('saveBtn').style.display = 'inline-block';
+              window.open(blobUrl, '_blank');
+              return;
+            }
+          }
+        } catch(e) {}
+      }
+      showMsg('所有来源加载失败，请检查网络后重试', true);
+    }
+
+    function saveLocal() {
+      if (!htmlData) return;
+      const blob = new Blob([htmlData], { type: 'text/html' });
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url; a.download = '徐云工作台.html';
+      document.body.appendChild(a); a.click();
+      document.body.removeChild(a); URL.revokeObjectURL(url);
+      showMsg('文件已下载！请在「下载」文件夹中找到，用浏览器打开即可');
+    }
+  </script>
+</body>
+</html>
